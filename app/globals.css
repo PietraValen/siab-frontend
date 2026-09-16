@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+/*
+ * Tokens espelhando 1:1 as variáveis criadas no Figma
+ * (arquivo "SIAB — Sistema de Identificação e Autenticação Biométrica",
+ * página "Foundations"). Se alguém mudar uma cor no Figma, mude aqui
+ * também para os dois lados não divergirem.
+ */
+@theme {
+  /* Cores primitivas -> semânticas (tema único, dark-only por design) */
+  --color-bg-primary: #0a0d11;
+  --color-bg-surface: #0f1318;
+  --color-bg-elevated: #161b22;
+  --color-border-default: #2a313c;
+
+  --color-text-primary: #f5f7fa;
+  --color-text-secondary: #7c8592;
+
+  --color-accent-default: #14b8ae;
+  --color-accent-subtle: #0b3b38;
+
+  --color-status-success: #22c55e;
+  --color-status-success-bg: #0f3320;
+  --color-status-danger: #ef4444;
+  --color-status-danger-bg: #3b0f0f;
+  --color-status-warning: #f59e0b;
+  --color-status-warning-bg: #3a2a08;
+
+  /* Espaçamento (mesma escala do Figma: xs/sm/md/lg/xl/2xl) */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+
+  /* No Tailwind v4, `max-w-*` resolve na ordem de prioridade de tema
+     ["--max-width", "--spacing", "--container"] — como definimos
+     --spacing-md/-xl/-2xl acima, sem isto aqui `max-w-md` (usado nos
+     formulários) e `max-w-2xl`/`max-w-xl` (usados na landing) herdariam
+     por engano os valores pequenos de espaçamento (16/32/48px) em vez da
+     largura máxima padrão do Tailwind. Restaura só as chaves que o
+     projeto usa. */
+  --max-width-md: 28rem;
+  --max-width-xl: 36rem;
+  --max-width-2xl: 42rem;
+
+  /* Raio de borda */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-full: 999px;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+}
+
+/* Foco visível para navegação por teclado — item de acessibilidade que a
+   disciplina de PIVC/interdisciplinaridade costuma cobrar na avaliação. */
+:focus-visible {
+  outline: 2px solid var(--color-accent-default);
+  outline-offset: 2px;
+}

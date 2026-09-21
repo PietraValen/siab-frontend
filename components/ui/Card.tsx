@@ -3,12 +3,16 @@ type CardProps = {
   valor: string | number;
 };
 
-/** Espelha o componente "Card" do Figma (usado nos KPIs do painel admin). */
+/** Espelha o componente "Card" de KPI do design system (painel admin). */
 export function Card({ titulo, valor }: CardProps) {
   return (
-    <div className="flex flex-col gap-2 rounded-lg border border-border-default bg-bg-surface p-lg">
-      <span className="text-[13px] font-medium text-text-secondary">{titulo}</span>
-      <span className="text-[28px] font-semibold text-text-primary">{valor}</span>
+    <div className="flex min-h-30 flex-1 flex-col justify-between gap-md rounded-lg bg-bg-panel p-lg">
+      <span className="font-mono text-xs font-medium uppercase tracking-wide text-outline">
+        {titulo}
+      </span>
+      <span className="font-mono text-[28px] font-semibold tracking-tight text-text-primary">
+        {valor}
+      </span>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState, type ReactNode } from "react";
 
 export type CameraCaptureHandle = {
   capturarFrame: () => void;
@@ -11,6 +11,12 @@ type CameraCaptureProps = {
   onCapture: (imagem: Blob) => void;
   /** Se true, mostra o botão de captura; se false, é controlado via ref (ver CameraCaptureHandle). */
   showCaptureButton?: boolean;
+  /** Sobrepõe guias/retículos decorativos por cima do vídeo (posicionamento absoluto). */
+  overlay?: ReactNode;
+  /** Sobrescreve as classes do contêiner relativo que envolve o vídeo (formato/borda). */
+  containerClassName?: string;
+  /** Sobrescreve as classes do próprio <video> (ex.: aspect-ratio, object-fit). */
+  videoClassName?: string;
 };
 
 /**
@@ -31,7 +37,10 @@ type CameraCaptureProps = {
  * capturarFrame() várias vezes em intervalo curto), não um único Blob.
  */
 export const CameraCapture = forwardRef<CameraCaptureHandle, CameraCaptureProps>(
-  function CameraCapture({ onCapture, showCaptureButton = true }, ref) {
+  function CameraCapture(
+    { onCapture, showCaptureButton = true, overlay, containerClassName, videoClassName },
+    ref,
+  ) {
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [erro, setErro] = useState<string | null>(null);
@@ -96,20 +105,26 @@ export const CameraCapture = forwardRef<CameraCaptureHandle, CameraCaptureProps>
 
     return (
       <div className="flex flex-col items-center gap-md">
-        <div className="relative w-full overflow-hidden rounded-lg border border-dashed border-accent-default bg-black">
+        <div
+          className={
+            containerClassName ??
+            "relative w-full overflow-hidden rounded-lg border border-dashed border-accent-default bg-black"
+          }
+        >
           {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
           <video
             ref={videoRef}
             autoPlay
             playsInline
             muted
-            className="aspect-video w-full object-cover"
+            className={videoClassName ?? "aspect-video w-full object-cover"}
           />
           {!pronto && (
             <div className="absolute inset-0 flex items-center justify-center text-sm text-text-secondary">
               Iniciando câmera...
             </div>
           )}
+          {pronto && overlay}
         </div>
         <canvas ref={canvasRef} className="hidden" />
         {showCaptureButton && (
@@ -117,7 +132,7 @@ export const CameraCapture = forwardRef<CameraCaptureHandle, CameraCaptureProps>
             type="button"
             onClick={capturarFrame}
             disabled={!pronto}
-            className="rounded-md bg-accent-default px-lg py-md text-sm font-semibold text-text-primary disabled:opacity-40"
+            className="rounded-md bg-accent-default px-lg py-md text-sm font-semibold text-bg-primary disabled:opacity-40"
           >
             Capturar
           </button>

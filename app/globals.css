@@ -1,10 +1,10 @@
 @import "tailwindcss";
 
 /*
- * Tokens espelhando 1:1 as variáveis criadas no Figma
- * (arquivo "SIAB — Sistema de Identificação e Autenticação Biométrica",
- * página "Foundations"). Se alguém mudar uma cor no Figma, mude aqui
- * também para os dois lados não divergirem.
+ * Tokens espelhando o design system "SIAB Tactical Biometrics" (gerado no
+ * Stitch a partir do Figma "SIAB — Sistema de Identificação e Autenticação
+ * Biométrica"). Se alguém mudar uma cor lá, mude aqui também para os dois
+ * lados não divergirem.
  */
 @theme {
   /* Cores primitivas -> semânticas (tema único, dark-only por design) */
@@ -13,8 +13,18 @@
   --color-bg-elevated: #161b22;
   --color-border-default: #2a313c;
 
+  /* Camadas extras de painel (Ground 1.5) usadas em sidebars, cabeçalhos,
+     cards aninhados e chips — entre bg-surface e bg-elevated na hierarquia
+     tonal do design system. */
+  --color-bg-panel: #191c20;
+  --color-bg-chip: #1d2024;
+  --color-bg-chip-strong: #272a2f;
+
   --color-text-primary: #f5f7fa;
   --color-text-secondary: #7c8592;
+  --color-text-muted: #bbc9c7;
+  --color-outline: #859491;
+  --color-outline-variant: #3c4948;
 
   --color-accent-default: #14b8ae;
   --color-accent-subtle: #0b3b38;
@@ -26,7 +36,7 @@
   --color-status-warning: #f59e0b;
   --color-status-warning-bg: #3a2a08;
 
-  /* Espaçamento (mesma escala do Figma: xs/sm/md/lg/xl/2xl) */
+  /* Espaçamento (mesma escala do design system: xs/sm/md/lg/xl/2xl) */
   --spacing-xs: 4px;
   --spacing-sm: 8px;
   --spacing-md: 16px;
@@ -45,13 +55,17 @@
   --max-width-xl: 36rem;
   --max-width-2xl: 42rem;
 
-  /* Raio de borda */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
+  /* Raio de borda — segue a regra do design system: badges/indicadores de
+     telemetria usam 4px (pills totalmente arredondadas são proibidas para
+     status/identidade), componentes base (input/botão/linha de tabela)
+     usam 8px, containers estruturais (cards/modais) usam 12px. */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
   --radius-full: 999px;
 
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, "JetBrains Mono", monospace;
 }
 
 html {

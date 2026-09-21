@@ -1,26 +1,25 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
 
 type NavItemProps = {
   href: string;
   label: string;
+  icon?: ReactNode;
   active?: boolean;
 };
 
-/** Espelha o componente "NavItem" do Figma (State=Default/Active). */
-export function NavItem({ href, label, active = false }: NavItemProps) {
+/** Espelha o componente "NavItem" do design system (State=Default/Active). */
+export function NavItem({ href, label, icon, active = false }: NavItemProps) {
   return (
     <Link
       href={href}
-      className={`flex items-center gap-2.5 rounded-md px-md py-2.5 text-sm transition-colors ${
+      className={`flex items-center gap-sm rounded-md px-sm py-sm text-sm transition-colors ${
         active
-          ? "bg-accent-subtle font-semibold text-accent-default"
-          : "font-medium text-text-secondary hover:text-text-primary"
+          ? "bg-accent-default/15 font-semibold text-accent-default"
+          : "font-medium text-text-secondary hover:bg-bg-chip hover:text-text-primary"
       }`}
     >
-      <span
-        className={`h-1.5 w-1.5 rounded-full ${active ? "bg-accent-default" : "bg-text-secondary"}`}
-        aria-hidden
-      />
+      {icon}
       {label}
     </Link>
   );

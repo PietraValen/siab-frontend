@@ -12,12 +12,14 @@ que também tem seu próprio `CLAUDE.md`) e é responsável por:
   navegador)
 - Telas de cadastro, reconhecimento e painel administrativo
 
-**O visual já está definido e aprovado no Figma** (arquivo "SIAB — Sistema
-de Identificação e Autenticação Biométrica", link no README). Os
+**O visual já está definido e aprovado** — a base é o Figma ("SIAB —
+Sistema de Identificação e Autenticação Biométrica", link no README),
+refinada para um design system "tático" gerado no Stitch (tema escuro de
+alto contraste, acento teal `#14b8ae`, tipografia Inter + JetBrains Mono
+para dados/telemetria, badges retangulares em vez de pills). Os
 componentes em `components/ui/` e os tokens em `app/globals.css` já
-espelham exatamente as variáveis e componentes de lá — **não redesenhe do
-zero**; se faltar algo, replique o padrão visual existente (tema escuro,
-acento teal, os mesmos raios/espaçamentos) em vez de inventar um novo.
+espelham exatamente essas variáveis — **não redesenhe do zero**; se faltar
+algo, replique o padrão visual existente em vez de inventar um novo.
 
 ## Stack
 
@@ -30,36 +32,32 @@ acento teal, os mesmos raios/espaçamentos) em vez de inventar um novo.
 
 | Caminho | O que é |
 |---|---|
-| `app/globals.css` | Tokens de design (`@theme`) — espelha as variáveis do Figma |
+| `app/globals.css` | Tokens de design (`@theme`) — espelha as variáveis do Figma/Stitch |
 | `app/scan/page.tsx` | Tela principal, roda o dia inteiro (reconhecimento) |
-| `app/enroll/page.tsx` | Cadastro biométrico |
-| `app/admin/` | Painel administrativo (layout com sidebar + 3 subpáginas) |
-| `components/ui/` | Button, Input, Badge, StatusPill, Card, NavItem — espelham os componentes do Figma 1:1 |
+| `app/admin/enroll/page.tsx` | Cadastro biométrico — ação de admin logado (cria usuário + captura o rosto) |
+| `app/admin/` | Painel administrativo (layout com sidebar + 4 subpáginas: usuários, cadastro, logs, relatórios) |
+| `components/ui/` | Button, Input, Badge, StatusPill, Card, NavItem, Icon — espelham os componentes do design system 1:1 |
 | `components/CameraCapture.tsx` | Wrapper de `getUserMedia` + captura de frame |
 | `lib/api.ts` | Toda chamada HTTP ao back-end passa por aqui |
 | `lib/types.ts` | Tipos espelhando os DTOs Java — mantidos manualmente em sincronia |
 
 ## Estado atual — pendências mais importantes (nesta ordem)
 
-1. **Autenticação do painel admin.** Hoje não existe tela de login nem
-   guard nas rotas `/admin/**` — `TOKEN_TEMPORARIO = ""` está hardcoded
-   nas páginas admin (procure por esse texto). Implementar:
-   - Uma tela `/admin/login` que chama `api.login()`
-   - Guardar o token (cookie httpOnly seria o ideal; se não der tempo,
-     localStorage é aceitável para o escopo do projeto — mas documentar a
-     limitação)
-   - Um guard em `app/admin/layout.tsx` redirecionando pra login se não
-     houver token válido
-2. **Fluxo real de cadastro** (`app/enroll/page.tsx`): hoje assume
-   `usuarioId = 1` fixo. Decidir com o grupo se o cadastro completo
-   (criar usuário + capturar rosto) é uma ação só de admin logado, e
-   ajustar a tela de acordo (provavelmente precisa virar uma rota dentro
-   de `/admin`, protegida, em vez de pública).
-3. **Captura automática em `/scan`**: hoje a captura é manual (clique no
-   botão). Para uso real, trocar para captura automática em intervalo
-   (ver TODO detalhado dentro de `app/scan/page.tsx`).
-4. **Exportação de PDF em `/admin/reports`**: bloqueado até o back-end
+1. **Captura automática em `/scan`**: hoje a captura é manual (botão
+   "Capturar e Verificar"). Para uso real, trocar para captura automática
+   em intervalo, usando o `ref` do `CameraCapture` (ver TODO detalhado
+   dentro de `app/scan/page.tsx`). Deixado manual de propósito por
+   enquanto, para o grupo poder testar frame a frame.
+2. **Exportação de PDF em `/admin/reports`**: bloqueado até o back-end
    implementar isso de verdade (ver `CLAUDE.md` do back-end).
+3. **Cookie httpOnly para o token do admin**: hoje o token fica em
+   `localStorage` (ver limitação documentada em `lib/auth.ts`) — aceitável
+   para o escopo do projeto, mas não para produção real.
+
+Resolvidas: login + guard do painel admin (`app/login/page.tsx`,
+`lib/auth.ts`, guard em `app/admin/layout.tsx`) e o cadastro biométrico
+como ação de admin logado (`app/admin/enroll/page.tsx`, que cria o
+usuário via `api.criarUsuario` e só depois associa o rosto capturado).
 
 ## Harness de testes
 
@@ -103,3 +101,17 @@ sem ele, as chamadas em `lib/api.ts` vão falhar.
   runtime (ex.: `` `text-${variavel}` ``) — o compilador do Tailwind só
   reconhece classes que aparecem por extenso no código-fonte. Use um mapa
   de opções estáticas (ver `components/ui/StatusPill.tsx` como exemplo).
+- Ícones usam a fonte "Material Symbols Outlined" (carregada via `<link>`
+  em `app/layout.tsx`) através do wrapper `components/ui/Icon.tsx` — não
+  adicione outra biblioteca de ícones (lucide, heroicons etc.) sem
+  necessidade.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

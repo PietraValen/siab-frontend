@@ -85,4 +85,20 @@ export const api = {
 
   resumoDeAcessos: (token: string) =>
     request<AccessSummary>("/api/admin/reports/access-summary", { token }),
+
+  // Corpo binário (PDF), não passa pelo `request` genérico (que sempre
+  // parseia JSON).
+  exportarRelatorioPdf: async (token: string): Promise<Blob> => {
+    const path = "/api/admin/reports/access-log.pdf";
+    const response = await fetch(`${API_URL}${path}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (!response.ok) {
+      const text = await response.text().catch(() => "");
+      throw new Error(`Erro ${response.status} em ${path}: ${text || response.statusText}`);
+    }
+
+    return response.blob();
+  },
 };

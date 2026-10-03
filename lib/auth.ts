@@ -1,44 +1,34 @@
+import { api, limparTokenCsrf } from "./api";
+import type { Sessao } from "./types";
+
 /**
- * Guarda o token JWT do painel administrativo em localStorage.
+ * Sessão do painel administrativo.
  *
- * Limitação conhecida (ver CLAUDE.md): o ideal seria um cookie httpOnly,
- * inacessível a JavaScript no cliente. localStorage foi usado pelo prazo do
- * projeto e fica exposto a XSS — aceitável para o escopo acadêmico do SIAB,
- * mas não deve ser reaproveitado assim em um sistema de produção real.
+ * O token JWT vive só no cookie HttpOnly SIAB_TOKEN gravado pelo back-end
+ * no login (Path=/api, SameSite=Strict) — o JavaScript da página não
+ * consegue lê-lo, então um XSS não tem como roubá-lo (era a limitação do
+ * antigo token em localStorage). Por isso o front também não tem como
+ * "olhar" o token para saber se está logado: pergunta ao back-end via
+ * GET /api/admin/sessao.
  */
-const TOKEN_STORAGE_KEY = "siab.admin.token";
-
-export function salvarToken(token: string) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(TOKEN_STORAGE_KEY, token);
-}
-
-export function obterToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return window.localStorage.getItem(TOKEN_STORAGE_KEY);
-}
-
-export function removerToken() {
-  if (typeof window === "undefined") return;
-  window.localStorage.removeItem(TOKEN_STORAGE_KEY);
-}
-
-/**
- * Checagem de validade só para UX (evitar mostrar o painel com um token
- * visivelmente expirado antes de qualquer chamada à API). Não substitui a
- * validação real, que é sempre feita pelo back-end a cada requisição.
- */
-export function tokenValido(token: string | null): boolean {
-  if (!token) return false;
-
-  const payloadBase64 = token.split(".")[1];
-  if (!payloadBase64) return false;
-
+export async function obterSessao(): Promise<Sessao | null> {
   try {
-    const payload = JSON.parse(atob(payloadBase64.replace(/-/g, "+").replace(/_/g, "/")));
-    if (typeof payload.exp !== "number") return true;
-    return payload.exp * 1000 > Date.now();
+    return await api.sessao();
   } catch {
-    return false;
+    // 401/403 (sem sessão ou expirada) ou back-end fora do ar: em ambos os
+    // casos o painel não pode ser mostrado.
+    return null;
+  }
+}
+
+/** Revoga o token no back-end (que também apaga o cookie). */
+export async function sair(): Promise<void> {
+  try {
+    await api.logout();
+  } catch {
+    // Mesmo se o back-end falhar, quem chama redireciona para /login; o
+    // token expira sozinho.
+  } finally {
+    limparTokenCsrf();
   }
 }

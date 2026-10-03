@@ -4,7 +4,6 @@ import { useState } from "react";
 import { CameraCapture } from "@/components/CameraCapture";
 import { Icon } from "@/components/ui/Icon";
 import { api } from "@/lib/api";
-import { obterToken } from "@/lib/auth";
 import type { NivelAcessoNome } from "@/lib/types";
 
 const NIVEIS: {
@@ -54,7 +53,8 @@ const guiaOval = (
  * Tela /admin/enroll — cadastro biométrico (RF01), restrito a administradores
  * logados (ver CLAUDE.md — pendência resolvida: o cadastro de usuário +
  * rosto agora é uma ação só do admin, dentro do painel protegido). Fluxo:
- * 1. Preencher nome/cargo/nível e criar o usuário via POST /api/admin/usuarios
+ * 1. Preencher nome/cargo/nível (+ PIN opcional) e criar o usuário via
+ *    POST /api/admin/usuarios
  * 2. Capturar o rosto pela webcam
  * 3. Enviar para POST /api/enrollment, associado ao usuário recém-criado
  */
@@ -62,6 +62,7 @@ export default function AdminEnrollPage() {
   const [nome, setNome] = useState("");
   const [cargo, setCargo] = useState("");
   const [nivelId, setNivelId] = useState<number>(1);
+  const [pin, setPin] = useState("");
   const [capturedImage, setCapturedImage] = useState<Blob | null>(null);
   const [status, setStatus] = useState<"idle" | "enviando" | "sucesso" | "erro">("idle");
   const [mensagem, setMensagem] = useState<string | null>(null);
@@ -72,19 +73,29 @@ export default function AdminEnrollPage() {
       setMensagem("Capture o rosto antes de cadastrar.");
       return;
     }
+    if (pin && !/^\d{4,8}$/.test(pin)) {
+      setStatus("erro");
+      setMensagem("O PIN deve ter de 4 a 8 dígitos numéricos.");
+      return;
+    }
 
     setStatus("enviando");
     setMensagem(null);
 
     try {
-      const token = obterToken() ?? "";
-      const usuario = await api.criarUsuario(token, { nome, cargo, nivelAcessoId: nivelId });
-      const resultado = await api.cadastrarRosto(token, usuario.id, capturedImage);
+      const usuario = await api.criarUsuario({
+        nome,
+        cargo,
+        nivelAcessoId: nivelId,
+        ...(pin ? { pin } : {}),
+      });
+      const resultado = await api.cadastrarRosto(usuario.id, capturedImage);
       setStatus("sucesso");
       setMensagem(resultado.mensagem);
       setNome("");
       setCargo("");
       setNivelId(1);
+      setPin("");
       setCapturedImage(null);
     } catch (err) {
       setStatus("erro");
@@ -93,6 +104,9 @@ export default function AdminEnrollPage() {
   }
 
   const enviando = status === "enviando";
+  // Portas de nível Ministro exigem rosto + PIN: um Ministro sem PIN só
+  // consegue abrir as portas dos níveis abaixo.
+  const ministroSemPin = nivelId === 3 && pin.length === 0;
 
   return (
     <div className="flex flex-col gap-xl">
@@ -210,6 +224,36 @@ export default function AdminEnrollPage() {
                   </label>
                 ))}
               </div>
+            </div>
+
+            <div className="flex flex-col gap-xs">
+              <label htmlFor="enroll-pin" className="text-sm font-medium text-text-secondary">
+                PIN de acesso <span className="text-outline">(opcional)</span>
+              </label>
+              <input
+                id="enroll-pin"
+                type="password"
+                inputMode="numeric"
+                autoComplete="new-password"
+                pattern="\d{4,8}"
+                minLength={4}
+                maxLength={8}
+                value={pin}
+                onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
+                placeholder="4 a 8 dígitos"
+                className="w-full rounded-md bg-bg-elevated px-md py-sm font-mono text-sm tracking-widest text-text-primary placeholder:text-outline placeholder:tracking-normal focus:outline-none focus:ring-1 focus:ring-accent-default"
+              />
+              <p
+                className={`flex items-start gap-xs text-xs ${
+                  ministroSemPin ? "text-status-warning" : "text-text-muted"
+                }`}
+              >
+                <Icon name="pin" className="text-[16px]" />
+                <span>
+                  Obrigatório para abrir portas de nível Ministro (rosto + PIN).
+                  {ministroSemPin && " Sem PIN, este usuário só abrirá portas dos níveis abaixo."}
+                </span>
+              </p>
             </div>
 
             <button

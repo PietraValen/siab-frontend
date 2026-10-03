@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { NavItem } from "@/components/ui/NavItem";
 import { Icon } from "@/components/ui/Icon";
-import { obterToken, removerToken, tokenValido } from "@/lib/auth";
-import { useMontado } from "@/hooks/useMontado";
 import { useRelogio } from "@/hooks/useRelogio";
+import { obterSessao, sair } from "@/lib/auth";
+import type { Sessao } from "@/lib/types";
 
 function RelogioAoVivo() {
   const agora = useRelogio();
@@ -26,32 +26,41 @@ function RelogioAoVivo() {
 }
 
 /**
- * Layout compartilhado por /admin, /admin/enroll, /admin/logs e
- * /admin/reports.
+ * Layout compartilhado por todas as páginas de /admin.
  *
- * Guard de autenticação: redireciona para /login se não houver um token
- * válido em localStorage (ver lib/auth.ts). A checagem só pode rodar no
- * cliente (localStorage não existe durante SSR), por isso o estado
- * "verificando" evita piscar o conteúdo do painel antes do redirect.
+ * Guard de autenticação: pergunta ao back-end se há uma sessão válida
+ * (GET /api/admin/sessao, autenticado pelo cookie HttpOnly — ver
+ * lib/auth.ts) e redireciona para /login se não houver. Enquanto a
+ * resposta não chega, nada do painel é renderizado, para não piscar o
+ * conteúdo antes do redirect. Isso é só UX: cada chamada do painel é
+ * validada de novo pelo back-end.
  */
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const montado = useMontado();
-  const autorizado = montado && tokenValido(obterToken());
+  const [sessao, setSessao] = useState<Sessao | null>(null);
 
   useEffect(() => {
-    if (montado && !autorizado) {
-      router.replace("/login");
-    }
-  }, [montado, autorizado, router]);
+    let ativo = true;
+    obterSessao().then((s) => {
+      if (!ativo) return;
+      if (s) {
+        setSessao(s);
+      } else {
+        router.replace("/login");
+      }
+    });
+    return () => {
+      ativo = false;
+    };
+  }, [router]);
 
-  function handleSair() {
-    removerToken();
+  async function handleSair() {
+    await sair();
     router.replace("/login");
   }
 
-  if (!autorizado) return null;
+  if (!sessao) return null;
 
   return (
     <div className="flex min-h-screen bg-bg-primary">
@@ -103,6 +112,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               active={pathname === "/admin/reports"}
               icon={<Icon name="analytics" className="text-[20px]" />}
             />
+            <NavItem
+              href="/admin/terminais"
+              label="Terminais"
+              active={pathname === "/admin/terminais"}
+              icon={<Icon name="sensor_door" className="text-[20px]" />}
+            />
+            <NavItem
+              href="/admin/seguranca"
+              label="Segurança da Conta"
+              active={pathname === "/admin/seguranca"}
+              icon={<Icon name="shield_lock" className="text-[20px]" />}
+            />
           </nav>
         </div>
 
@@ -115,10 +136,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               TLS 1.3
             </span>
           </div>
-          <span className="font-mono text-xs text-text-muted">Sessão Criptográfica Ativa</span>
+          <span className="truncate font-mono text-xs text-text-primary">{sessao.username}</span>
           <div className="flex items-center justify-between pt-xs">
-            <span className="font-mono text-[10px] uppercase tracking-wide text-outline">
-              Nível 4 Clearance
+            <span
+              className={`font-mono text-[10px] uppercase tracking-wide ${
+                sessao.mfaAtivo ? "text-status-success" : "text-status-warning"
+              }`}
+            >
+              {sessao.mfaAtivo ? "MFA ativo" : "MFA desativado"}
             </span>
             <button
               type="button"

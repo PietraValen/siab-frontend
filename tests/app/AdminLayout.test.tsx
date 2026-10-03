@@ -1,7 +1,7 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import AdminLayout from "@/app/admin/layout";
-import { salvarToken } from "@/lib/auth";
+import { api, ApiError } from "@/lib/api";
 
 const replace = vi.fn();
 
@@ -10,18 +10,21 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace, push: vi.fn() }),
 }));
 
-function criarTokenValido() {
-  const payload = btoa(JSON.stringify({ exp: Math.floor(Date.now() / 1000) + 3600 }));
-  return `header.${payload}.assinatura`;
-}
+vi.mock("@/lib/api", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/api")>()),
+  api: { sessao: vi.fn(), logout: vi.fn() },
+}));
 
 describe("AdminLayout (guard de autenticação)", () => {
   beforeEach(() => {
-    window.localStorage.clear();
     replace.mockClear();
+    vi.mocked(api.sessao).mockReset();
+    vi.mocked(api.logout).mockReset().mockResolvedValue(undefined);
   });
 
-  it("redireciona para /login quando não há token", async () => {
+  it("redireciona para /login quando não há sessão (401)", async () => {
+    vi.mocked(api.sessao).mockRejectedValue(new ApiError(401, "Não autenticado.", null, null));
+
     render(
       <AdminLayout>
         <p>Conteúdo protegido</p>
@@ -32,21 +35,8 @@ describe("AdminLayout (guard de autenticação)", () => {
     expect(screen.queryByText("Conteúdo protegido")).not.toBeInTheDocument();
   });
 
-  it("redireciona para /login quando o token está expirado", async () => {
-    const payload = btoa(JSON.stringify({ exp: Math.floor(Date.now() / 1000) - 10 }));
-    salvarToken(`header.${payload}.assinatura`);
-
-    render(
-      <AdminLayout>
-        <p>Conteúdo protegido</p>
-      </AdminLayout>,
-    );
-
-    await waitFor(() => expect(replace).toHaveBeenCalledWith("/login"));
-  });
-
-  it("renderiza o conteúdo quando há um token válido", async () => {
-    salvarToken(criarTokenValido());
+  it("renderiza o conteúdo e o usuário quando a sessão é válida", async () => {
+    vi.mocked(api.sessao).mockResolvedValue({ username: "admin", mfaAtivo: true });
 
     render(
       <AdminLayout>
@@ -55,6 +45,37 @@ describe("AdminLayout (guard de autenticação)", () => {
     );
 
     expect(await screen.findByText("Conteúdo protegido")).toBeInTheDocument();
+    expect(screen.getByText("admin")).toBeInTheDocument();
+    expect(screen.getByText("MFA ativo")).toBeInTheDocument();
     expect(replace).not.toHaveBeenCalled();
+  });
+
+  it("'Sair' revoga a sessão no back-end e volta para /login", async () => {
+    vi.mocked(api.sessao).mockResolvedValue({ username: "admin", mfaAtivo: false });
+
+    render(
+      <AdminLayout>
+        <p>Conteúdo protegido</p>
+      </AdminLayout>,
+    );
+
+    fireEvent.click(await screen.findByRole("button", { name: /Sair/ }));
+
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/login"));
+    expect(api.logout).toHaveBeenCalled();
+  });
+
+  it("não guarda nada de sessão em localStorage", async () => {
+    window.localStorage.clear();
+    vi.mocked(api.sessao).mockResolvedValue({ username: "admin", mfaAtivo: false });
+
+    render(
+      <AdminLayout>
+        <p>Conteúdo protegido</p>
+      </AdminLayout>,
+    );
+
+    await screen.findByText("Conteúdo protegido");
+    expect(window.localStorage.length).toBe(0);
   });
 });

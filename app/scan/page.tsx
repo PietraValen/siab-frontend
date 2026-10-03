@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Input";
+import { useRelogio } from "@/hooks/useRelogio";
 import { api, ApiError } from "@/lib/api";
 import { assinarScan, desparear, obterPareamento, parear, type Pareamento } from "@/lib/terminal";
 import type { Desafio, ScanResult } from "@/lib/types";
@@ -22,22 +23,6 @@ const TOTAL_FRAMES = 8;
 const INTERVALO_FRAMES_MS = 250;
 
 const esperar = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-function useRelogio() {
-  const [agora, setAgora] = useState<Date | null>(null);
-  useEffect(() => {
-    // Primeira leitura num callback (não no corpo do effect), para não
-    // disparar uma renderização em cascata logo na montagem.
-    const atualizar = () => setAgora(new Date());
-    const primeira = setTimeout(atualizar, 0);
-    const id = setInterval(atualizar, 1000);
-    return () => {
-      clearTimeout(primeira);
-      clearInterval(id);
-    };
-  }, []);
-  return agora;
-}
 
 /** Mensagem de erro para a tela do quiosque (429 e 401 têm texto próprio). */
 function mensagemDeErro(err: unknown): string {

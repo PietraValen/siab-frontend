@@ -4,23 +4,12 @@ import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { NavItem } from "@/components/ui/NavItem";
 import { Icon } from "@/components/ui/Icon";
+import { useRelogio } from "@/hooks/useRelogio";
 import { obterSessao, sair } from "@/lib/auth";
 import type { Sessao } from "@/lib/types";
 
 function RelogioAoVivo() {
-  const [agora, setAgora] = useState<Date | null>(null);
-
-  useEffect(() => {
-    // Primeira leitura num callback (não no corpo do effect), para não
-    // disparar uma renderização em cascata logo na montagem.
-    const atualizar = () => setAgora(new Date());
-    const primeira = setTimeout(atualizar, 0);
-    const id = setInterval(atualizar, 1000);
-    return () => {
-      clearTimeout(primeira);
-      clearInterval(id);
-    };
-  }, []);
+  const agora = useRelogio();
 
   if (!agora) return null;
 

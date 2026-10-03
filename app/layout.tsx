@@ -27,10 +27,14 @@ export default function RootLayout({
     <html lang="pt-BR" className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <head>
         {/* Ícones de telemetria/status usados nos painéis administrativos e
-            no terminal de reconhecimento (ver components/ui/Icon.tsx). */}
+            no terminal de reconhecimento (ver components/ui/Icon.tsx).
+            display=block evita mostrar o nome do ícone como texto enquanto
+            a fonte carrega. no-page-custom-font não se aplica ao App Router:
+            este layout raiz vale para todas as páginas. */}
+        {/* eslint-disable-next-line @next/next/no-page-custom-font, @next/next/google-font-display */}
         <link
           rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block"
         />
       </head>
       <body>{children}</body>

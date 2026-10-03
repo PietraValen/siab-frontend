@@ -65,13 +65,16 @@ export const api = {
       body: JSON.stringify(dados),
     }),
 
-  cadastrarRosto: (usuarioId: number, imagem: Blob) => {
+  // Exige o JWT do admin logado: sem isso, qualquer pessoa poderia associar
+  // o próprio rosto a um usuário existente e passar pelo /scan com o nível
+  // de acesso dele.
+  cadastrarRosto: (token: string, usuarioId: number, imagem: Blob) => {
     const form = new FormData();
     form.set("usuarioId", String(usuarioId));
     form.set("imagem", imagem, "captura.jpg");
     return request<{ embeddingId: number; algoritmo: string; mensagem: string }>(
       "/api/enrollment",
-      { method: "POST", body: form },
+      { method: "POST", token, body: form },
     );
   },
 

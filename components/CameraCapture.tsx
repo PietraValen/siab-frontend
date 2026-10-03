@@ -111,7 +111,6 @@ export const CameraCapture = forwardRef<CameraCaptureHandle, CameraCaptureProps>
             "relative w-full overflow-hidden rounded-lg border border-dashed border-accent-default bg-black"
           }
         >
-          {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
           <video
             ref={videoRef}
             autoPlay

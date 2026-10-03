@@ -79,7 +79,7 @@ export default function AdminEnrollPage() {
     try {
       const token = obterToken() ?? "";
       const usuario = await api.criarUsuario(token, { nome, cargo, nivelAcessoId: nivelId });
-      const resultado = await api.cadastrarRosto(usuario.id, capturedImage);
+      const resultado = await api.cadastrarRosto(token, usuario.id, capturedImage);
       setStatus("sucesso");
       setMensagem(resultado.mensagem);
       setNome("");

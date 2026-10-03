@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { CameraCapture, type CameraCaptureHandle } from "@/components/CameraCapture";
 import { Icon } from "@/components/ui/Icon";
+import { useRelogio } from "@/hooks/useRelogio";
 import { api } from "@/lib/api";
 import type { AreaCofre, ScanResult } from "@/lib/types";
 
@@ -22,32 +23,32 @@ const CHAVE_AREA = "siab.scan.area";
  * Área em que este terminal está instalado. Fica salva no navegador para o
  * kiosk continuar na mesma área depois de recarregar a página.
  */
-function useAreaDoTerminal() {
-  const [area, setArea] = useState<AreaCofre>("GERAL");
+const ouvintesArea = new Set<() => void>();
 
-  useEffect(() => {
-    const salva = window.localStorage.getItem(CHAVE_AREA);
-    if (AREAS.some((a) => a.valor === salva)) {
-      setArea(salva as AreaCofre);
-    }
-  }, []);
+function inscreverArea(ouvinte: () => void) {
+  ouvintesArea.add(ouvinte);
+  return () => {
+    ouvintesArea.delete(ouvinte);
+  };
+}
+
+function lerAreaSalva(): AreaCofre {
+  const salva = window.localStorage.getItem(CHAVE_AREA);
+  return AREAS.some((a) => a.valor === salva) ? (salva as AreaCofre) : "GERAL";
+}
+
+function useAreaDoTerminal() {
+  // localStorage tratado como store externo (useSyncExternalStore): no SSR
+  // a área é GERAL e no navegador passa a ser a salva, sem setState em
+  // useEffect.
+  const area = useSyncExternalStore(inscreverArea, lerAreaSalva, () => "GERAL" as AreaCofre);
 
   function trocarArea(nova: AreaCofre) {
-    setArea(nova);
     window.localStorage.setItem(CHAVE_AREA, nova);
+    ouvintesArea.forEach((o) => o());
   }
 
   return [area, trocarArea] as const;
-}
-
-function useRelogio() {
-  const [agora, setAgora] = useState<Date | null>(null);
-  useEffect(() => {
-    setAgora(new Date());
-    const id = setInterval(() => setAgora(new Date()), 1000);
-    return () => clearInterval(id);
-  }, []);
-  return agora;
 }
 
 const reticuloFacial = (

@@ -1,19 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { NavItem } from "@/components/ui/NavItem";
 import { Icon } from "@/components/ui/Icon";
 import { obterToken, removerToken, tokenValido } from "@/lib/auth";
+import { useMontado } from "@/hooks/useMontado";
+import { useRelogio } from "@/hooks/useRelogio";
 
 function RelogioAoVivo() {
-  const [agora, setAgora] = useState<Date | null>(null);
-
-  useEffect(() => {
-    setAgora(new Date());
-    const id = setInterval(() => setAgora(new Date()), 1000);
-    return () => clearInterval(id);
-  }, []);
+  const agora = useRelogio();
 
   if (!agora) return null;
 
@@ -41,15 +37,14 @@ function RelogioAoVivo() {
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [autorizado, setAutorizado] = useState(false);
+  const montado = useMontado();
+  const autorizado = montado && tokenValido(obterToken());
 
   useEffect(() => {
-    if (tokenValido(obterToken())) {
-      setAutorizado(true);
-    } else {
+    if (montado && !autorizado) {
       router.replace("/login");
     }
-  }, [router]);
+  }, [montado, autorizado, router]);
 
   function handleSair() {
     removerToken();

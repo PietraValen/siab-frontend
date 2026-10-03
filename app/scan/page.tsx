@@ -167,6 +167,7 @@ export default function ScanPage() {
   const [pin, setPin] = useState("");
   const [frameAtual, setFrameAtual] = useState(0);
   const [confirmandoDesparear, setConfirmandoDesparear] = useState(false);
+  const [cameraPronta, setCameraPronta] = useState(false);
   const agora = useRelogio();
 
   useEffect(() => {
@@ -444,6 +445,7 @@ export default function ScanPage() {
                 overlay={ocupado ? reticuloFacial : undefined}
                 containerClassName="relative h-64 w-64 sm:h-72 sm:w-72"
                 videoClassName="h-full w-full object-cover"
+                onProntoChange={setCameraPronta}
               />
               {ocupado && (
                 <div className="absolute left-0 right-0 top-1/2 h-1 animate-[bounce_3s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-accent-default to-transparent opacity-80" />
@@ -460,7 +462,7 @@ export default function ScanPage() {
                 <button
                   type="button"
                   onClick={iniciarTentativa}
-                  disabled={!porta || !!terminalRecusado}
+                  disabled={!porta || !!terminalRecusado || !cameraPronta}
                   className="rounded-md bg-accent-default px-lg py-sm text-sm font-semibold text-bg-primary transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   Capturar e Verificar

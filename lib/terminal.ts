@@ -29,10 +29,10 @@ export type Pareamento = {
 
 /**
  * Mensagem assinada em cada scan — precisa bater byte a byte com
- * TerminalAutenticacaoService.mensagemCanonica no back-end: linhas unidas
- * por "\n", sem quebra de linha no final, hashes SHA-256 dos frames em hex
- * minúsculo separados por vírgula na mesma ordem do upload, e PIN vazio
- * quando não houver.
+ * TerminalAutenticacaoService.mensagemCanonica no back-end (String.join
+ * com "\n"): sempre 6 linhas, hashes SHA-256 dos frames em hex minúsculo
+ * separados por vírgula na mesma ordem do upload, e a última linha é o PIN
+ * — vazia quando não houver, o que faz a mensagem terminar em "\n".
  */
 export function mensagemCanonica(dados: {
   terminalId: string;

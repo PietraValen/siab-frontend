@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { forwardRef, useImperativeHandle } from "react";
+import { forwardRef, useEffect, useImperativeHandle } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import ScanPage from "@/app/scan/page";
 import { api, ApiError } from "@/lib/api";
@@ -9,7 +9,11 @@ import type { Desafio } from "@/lib/types";
 // getUserMedia não existe em jsdom: troca a câmera por um componente que
 // entrega um frame falso a cada capturarBlob() chamado pela página.
 vi.mock("@/components/CameraCapture", () => ({
-  CameraCapture: forwardRef(function CameraFalsa(_props, ref) {
+  CameraCapture: forwardRef(function CameraFalsa(
+    { onProntoChange }: { onProntoChange?: (pronto: boolean) => void },
+    ref,
+  ) {
+    useEffect(() => onProntoChange?.(true), [onProntoChange]);
     useImperativeHandle(ref, () => ({
       capturarFrame: () => undefined,
       capturarBlob: async () => new Blob(["frame"], { type: "image/jpeg" }),

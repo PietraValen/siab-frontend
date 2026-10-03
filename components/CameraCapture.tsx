@@ -20,6 +20,12 @@ type CameraCaptureProps = {
   containerClassName?: string;
   /** Sobrescreve as classes do próprio <video> (ex.: aspect-ratio, object-fit). */
   videoClassName?: string;
+  /**
+   * Avisa quando o vídeo passa a ter dimensões (primeiro frame decodificado).
+   * Antes disso capturarBlob() devolve null, então quem dispara a captura
+   * pelo ref deve esperar este sinal.
+   */
+  onProntoChange?: (pronto: boolean) => void;
 };
 
 /**
@@ -40,7 +46,7 @@ type CameraCaptureProps = {
  */
 export const CameraCapture = forwardRef<CameraCaptureHandle, CameraCaptureProps>(
   function CameraCapture(
-    { onCapture, showCaptureButton = true, overlay, containerClassName, videoClassName },
+    { onCapture, showCaptureButton = true, overlay, containerClassName, videoClassName, onProntoChange },
     ref,
   ) {
     const videoRef = useRef<HTMLVideoElement>(null);
@@ -59,7 +65,6 @@ export const CameraCapture = forwardRef<CameraCaptureHandle, CameraCaptureProps>
           });
           if (videoRef.current) {
             videoRef.current.srcObject = stream;
-            setPronto(true);
           }
         } catch {
           setErro(
@@ -97,6 +102,13 @@ export const CameraCapture = forwardRef<CameraCaptureHandle, CameraCaptureProps>
 
     useImperativeHandle(ref, () => ({ capturarFrame, capturarBlob }));
 
+    // Só "pronto" quando o vídeo já tem dimensões: com o stream atribuído
+    // mas sem metadados, videoWidth ainda é 0 e a captura sairia vazia.
+    function aoCarregarMetadados() {
+      setPronto(true);
+      onProntoChange?.(true);
+    }
+
     if (erro) {
       return (
         <div className="flex h-64 w-full items-center justify-center rounded-lg border border-dashed border-status-danger bg-bg-elevated p-md text-center text-sm text-status-danger">
@@ -118,6 +130,7 @@ export const CameraCapture = forwardRef<CameraCaptureHandle, CameraCaptureProps>
             autoPlay
             playsInline
             muted
+            onLoadedMetadata={aoCarregarMetadados}
             className={videoClassName ?? "aspect-video w-full object-cover"}
           />
           {!pronto && (

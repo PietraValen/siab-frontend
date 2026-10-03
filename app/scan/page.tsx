@@ -5,9 +5,40 @@ import Link from "next/link";
 import { CameraCapture, type CameraCaptureHandle } from "@/components/CameraCapture";
 import { Icon } from "@/components/ui/Icon";
 import { api } from "@/lib/api";
-import type { ScanResult } from "@/lib/types";
+import type { AreaCofre, ScanResult } from "@/lib/types";
 
 type Estado = "aguardando" | "analisando" | "resultado";
+
+/** Áreas do cofre, na ordem dos níveis exigidos (ver AreaCofre no back-end). */
+const AREAS: { valor: AreaCofre; rotulo: string; nivel: number }[] = [
+  { valor: "GERAL", rotulo: "Acesso Geral", nivel: 1 },
+  { valor: "DIRETORIA", rotulo: "Diretoria", nivel: 2 },
+  { valor: "MINISTRO", rotulo: "Ministro", nivel: 3 },
+];
+
+const CHAVE_AREA = "siab.scan.area";
+
+/**
+ * Área em que este terminal está instalado. Fica salva no navegador para o
+ * kiosk continuar na mesma área depois de recarregar a página.
+ */
+function useAreaDoTerminal() {
+  const [area, setArea] = useState<AreaCofre>("GERAL");
+
+  useEffect(() => {
+    const salva = window.localStorage.getItem(CHAVE_AREA);
+    if (AREAS.some((a) => a.valor === salva)) {
+      setArea(salva as AreaCofre);
+    }
+  }, []);
+
+  function trocarArea(nova: AreaCofre) {
+    setArea(nova);
+    window.localStorage.setItem(CHAVE_AREA, nova);
+  }
+
+  return [area, trocarArea] as const;
+}
 
 function useRelogio() {
   const [agora, setAgora] = useState<Date | null>(null);
@@ -35,7 +66,9 @@ const reticuloFacial = (
  * Tela /scan — reconhecimento facial em tempo real (RF02/RF03/RF04).
  * Fica ligada o dia inteiro ao lado do "cofre". Fluxo:
  * 1. Captura um frame (manual, pelo botão — ver TODO abaixo)
- * 2. Envia para POST /api/recognition/scan (back-end roda as 5 fases)
+ * 2. Envia para POST /api/recognition/scan junto com a área do cofre em
+ *    que o terminal está (back-end roda as 5 fases e compara o nível do
+ *    usuário com o nível exigido pela área)
  * 3. Mostra o resultado por alguns segundos e volta a aguardar
  *
  * TODO (UX de produção): hoje a captura é manual (botão "Capturar" do
@@ -52,13 +85,14 @@ export default function ScanPage() {
   const [resultado, setResultado] = useState<ScanResult | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const agora = useRelogio();
+  const [area, setArea] = useAreaDoTerminal();
 
   async function handleCapture(imagem: Blob) {
     setEstado("analisando");
     setErro(null);
 
     try {
-      const res = await api.reconhecerRosto(imagem);
+      const res = await api.reconhecerRosto(imagem, area);
       setResultado(res);
       setEstado("resultado");
 
@@ -75,6 +109,7 @@ export default function ScanPage() {
   }
 
   const concedido = resultado?.acessoConcedido ?? false;
+  const areaDoResultado = AREAS.find((a) => a.valor === resultado?.area);
 
   return (
     <main className="min-h-screen bg-bg-primary text-text-primary">
@@ -140,6 +175,36 @@ export default function ScanPage() {
       </div>
 
       <div className="mx-auto flex w-full max-w-4xl flex-col items-center gap-lg px-lg py-xl md:px-2xl">
+        {/* Área protegida por este terminal */}
+        <div className="flex w-full flex-col gap-xs rounded-lg bg-bg-panel p-sm">
+          <span id="rotulo-area" className="font-mono text-[10px] uppercase tracking-wide text-outline">
+            Área Protegida // Nível Exigido
+          </span>
+          <div role="radiogroup" aria-labelledby="rotulo-area" className="grid grid-cols-3 gap-xs">
+            {AREAS.map((opcao) => {
+              const selecionada = opcao.valor === area;
+              return (
+                <button
+                  key={opcao.valor}
+                  type="button"
+                  role="radio"
+                  aria-checked={selecionada}
+                  disabled={estado === "analisando"}
+                  onClick={() => setArea(opcao.valor)}
+                  className={`flex items-center justify-between gap-xs rounded-sm px-sm py-xs font-mono text-xs font-medium uppercase transition-colors disabled:opacity-50 ${
+                    selecionada
+                      ? "bg-accent-default text-bg-primary"
+                      : "bg-bg-chip text-text-secondary hover:text-text-primary"
+                  }`}
+                >
+                  <span>{opcao.rotulo}</span>
+                  <span className={selecionada ? "text-bg-primary" : "text-text-muted"}>N{opcao.nivel}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Tira de telemetria */}
         <div className="grid w-full grid-cols-2 gap-md md:grid-cols-3">
           <div className="flex flex-col gap-xs rounded-lg bg-bg-panel p-sm">
@@ -242,7 +307,7 @@ export default function ScanPage() {
               </div>
             </div>
 
-            <div className="mt-md grid grid-cols-1 gap-md rounded-lg bg-bg-chip p-md md:grid-cols-3">
+            <div className="mt-md grid grid-cols-1 gap-md rounded-lg bg-bg-chip p-md md:grid-cols-4">
               <div className="flex flex-col gap-xs">
                 <span className="font-mono text-[10px] uppercase tracking-wide text-outline">Identidade</span>
                 <div className="text-sm font-semibold text-text-primary">
@@ -256,6 +321,12 @@ export default function ScanPage() {
                 </div>
               </div>
               <div className="flex flex-col gap-xs">
+                <span className="font-mono text-[10px] uppercase tracking-wide text-outline">Nível Exigido</span>
+                <div className="text-sm font-semibold text-text-primary">
+                  {areaDoResultado ? `${areaDoResultado.rotulo} (N${resultado.nivelExigido})` : "—"}
+                </div>
+              </div>
+              <div className="flex flex-col gap-xs">
                 <span className="font-mono text-[10px] uppercase tracking-wide text-outline">Confiança</span>
                 <div className="font-mono text-sm font-semibold text-text-primary">
                   {(resultado.similaridade * 100).toFixed(1)}%
@@ -263,7 +334,7 @@ export default function ScanPage() {
               </div>
             </div>
 
-            {!resultado.usuario && (
+            {!concedido && (
               <p className="mt-sm text-center text-sm text-text-secondary">{resultado.motivo}</p>
             )}
           </div>

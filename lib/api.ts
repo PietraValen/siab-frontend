@@ -1,4 +1,4 @@
-import type { AccessLog, AccessSummary, Administrador, ScanResult, Usuario } from "./types";
+import type { AccessLog, AccessSummary, Administrador, AreaCofre, ScanResult, Usuario } from "./types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
 
@@ -75,9 +75,10 @@ export const api = {
     );
   },
 
-  reconhecerRosto: (imagem: Blob) => {
+  reconhecerRosto: (imagem: Blob, area: AreaCofre) => {
     const form = new FormData();
     form.set("imagem", imagem, "captura.jpg");
+    form.set("area", area);
     return request<ScanResult>("/api/recognition/scan", { method: "POST", body: form });
   },
 

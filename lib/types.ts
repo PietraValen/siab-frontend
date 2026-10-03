@@ -25,11 +25,20 @@ export interface AccessLog {
   dataHora: string;
 }
 
+/**
+ * Área do cofre onde o terminal /scan está instalado. Espelha o enum
+ * br.edu.unip.siab.accesscontrol.AreaCofre: cada área exige um nível mínimo
+ * (GERAL = 1, DIRETORIA = 2, MINISTRO = 3).
+ */
+export type AreaCofre = "GERAL" | "DIRETORIA" | "MINISTRO";
+
 export interface ScanResult {
   acessoConcedido: boolean;
   usuario: { id: number; nome: string; nivelAcesso: NivelAcessoNome } | null;
   similaridade: number;
   motivo: string;
+  area: AreaCofre;
+  nivelExigido: number;
 }
 
 export interface AccessSummary {

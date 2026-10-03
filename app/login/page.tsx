@@ -4,14 +4,15 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Icon } from "@/components/ui/Icon";
-import { api } from "@/lib/api";
-import { salvarToken } from "@/lib/auth";
+import { api, ApiError } from "@/lib/api";
 
 /**
  * Tela /login — acesso ao painel administrativo. Fluxo:
- * 1. Autentica via POST /api/auth/login
- * 2. Guarda o token (ver lib/auth.ts — limitação de usar localStorage
- *    documentada lá)
+ * 1. Autentica via POST /api/auth/login — o back-end grava a sessão num
+ *    cookie HttpOnly (ver lib/auth.ts); o token do corpo é ignorado
+ * 2. Se o admin tiver MFA ativo, o back-end responde 401 com
+ *    `mfaNecessario` e a tela pede o código de 6 dígitos do app
+ *    autenticador (segunda etapa), reenviando usuário + senha + código
  * 3. Redireciona para /admin, onde o guard em app/admin/layout.tsx passa a
  *    deixar entrar
  */
@@ -19,6 +20,8 @@ export default function LoginPage() {
   const router = useRouter();
   const [usuario, setUsuario] = useState("");
   const [senha, setSenha] = useState("");
+  const [codigoMfa, setCodigoMfa] = useState("");
+  const [etapa, setEtapa] = useState<"credenciais" | "mfa">("credenciais");
   const [mostrarSenha, setMostrarSenha] = useState(false);
   const [status, setStatus] = useState<"idle" | "enviando" | "erro">("idle");
   const [mensagem, setMensagem] = useState<string | null>(null);
@@ -29,13 +32,33 @@ export default function LoginPage() {
     setMensagem(null);
 
     try {
-      const { token } = await api.login(usuario, senha);
-      salvarToken(token);
+      await api.login(usuario, senha, etapa === "mfa" ? codigoMfa : undefined);
       router.push("/admin");
     } catch (err) {
       setStatus("erro");
+      if (err instanceof ApiError && err.status === 401 && err.corpo?.mfaNecessario === true) {
+        // Primeira vez: só faltou o código (sem mensagem de erro). Na
+        // etapa MFA: o código estava errado.
+        if (etapa === "mfa") {
+          setMensagem(err.message);
+        }
+        setEtapa("mfa");
+        setCodigoMfa("");
+        return;
+      }
+      if (err instanceof ApiError && err.status === 429 && err.retryAfter) {
+        setMensagem(`${err.message} Tente novamente em ${err.retryAfter} s.`);
+        return;
+      }
       setMensagem(err instanceof Error ? err.message : "Erro ao autenticar.");
     }
+  }
+
+  function voltarParaCredenciais() {
+    setEtapa("credenciais");
+    setCodigoMfa("");
+    setMensagem(null);
+    setStatus("idle");
   }
 
   const enviando = status === "enviando";
@@ -81,68 +104,119 @@ export default function LoginPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-md">
-              <div>
-                <label
-                  htmlFor="login-usuario"
-                  className="mb-xs block font-mono text-xs uppercase tracking-wide text-text-primary"
-                >
-                  Identificador / Usuário
-                </label>
-                <div className="relative rounded-sm bg-bg-primary">
-                  <Icon
-                    name="badge"
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-outline"
-                  />
-                  <input
-                    id="login-usuario"
-                    name="usuario"
-                    type="text"
-                    autoComplete="username"
-                    required
-                    value={usuario}
-                    onChange={(e) => setUsuario(e.target.value)}
-                    placeholder="Digite seu usuário"
-                    className="w-full rounded-sm bg-transparent py-sm pl-10 pr-md font-mono text-sm text-text-primary placeholder:text-outline focus:bg-bg-chip focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <div className="mb-xs flex items-center justify-between">
-                  <label
-                    htmlFor="login-senha"
-                    className="block font-mono text-xs uppercase tracking-wide text-text-primary"
-                  >
-                    Senha de segurança
-                  </label>
-                  <span className="font-mono text-xs text-outline">CRIPTO-TOKEN // SIAB-PKI</span>
-                </div>
-                <div className="relative rounded-sm bg-bg-primary">
-                  <Icon
-                    name="key"
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-outline"
-                  />
-                  <input
-                    id="login-senha"
-                    name="senha"
-                    type={mostrarSenha ? "text" : "password"}
-                    autoComplete="current-password"
-                    required
-                    value={senha}
-                    onChange={(e) => setSenha(e.target.value)}
-                    placeholder="••••••••••••••••••••"
-                    className="w-full rounded-sm bg-transparent py-sm pl-10 pr-10 font-mono text-sm text-text-primary placeholder:text-outline focus:bg-bg-chip focus:outline-none"
-                  />
+              {etapa === "mfa" ? (
+                <div className="flex flex-col gap-md">
+                  <div className="flex items-start gap-sm rounded-sm bg-bg-chip p-md">
+                    <Icon name="phonelink_lock" className="mt-0.5 shrink-0 text-[18px] text-accent-default" />
+                    <p className="text-sm leading-relaxed text-text-muted">
+                      Autenticação em dois fatores ativa para{" "}
+                      <span className="font-mono text-text-primary">{usuario}</span>. Digite o código
+                      de 6 dígitos do seu app autenticador.
+                    </p>
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="login-mfa"
+                      className="mb-xs block font-mono text-xs uppercase tracking-wide text-text-primary"
+                    >
+                      Código de verificação
+                    </label>
+                    <div className="relative rounded-sm bg-bg-primary">
+                      <Icon
+                        name="pin"
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-outline"
+                      />
+                      <input
+                        id="login-mfa"
+                        name="codigoMfa"
+                        type="text"
+                        inputMode="numeric"
+                        autoComplete="one-time-code"
+                        pattern="\d{6}"
+                        maxLength={6}
+                        required
+                        autoFocus
+                        value={codigoMfa}
+                        onChange={(e) => setCodigoMfa(e.target.value.replace(/\D/g, ""))}
+                        placeholder="000000"
+                        className="w-full rounded-sm bg-transparent py-sm pl-10 pr-md font-mono text-sm tracking-[0.3em] text-text-primary placeholder:text-outline focus:bg-bg-chip focus:outline-none"
+                      />
+                    </div>
+                  </div>
                   <button
                     type="button"
-                    aria-label="Alternar visibilidade da senha"
-                    onClick={() => setMostrarSenha((v) => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-outline transition-colors hover:text-text-primary focus:outline-none"
+                    onClick={voltarParaCredenciais}
+                    className="self-start font-mono text-xs text-text-secondary hover:text-text-primary"
                   >
-                    <Icon name={mostrarSenha ? "visibility_off" : "visibility"} className="text-[18px]" />
+                    ← Voltar e trocar usuário
                   </button>
                 </div>
-              </div>
+              ) : (
+                <>
+                  <div>
+                    <label
+                      htmlFor="login-usuario"
+                      className="mb-xs block font-mono text-xs uppercase tracking-wide text-text-primary"
+                    >
+                      Identificador / Usuário
+                    </label>
+                    <div className="relative rounded-sm bg-bg-primary">
+                      <Icon
+                        name="badge"
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-outline"
+                      />
+                      <input
+                        id="login-usuario"
+                        name="usuario"
+                        type="text"
+                        autoComplete="username"
+                        required
+                        value={usuario}
+                        onChange={(e) => setUsuario(e.target.value)}
+                        placeholder="Digite seu usuário"
+                        className="w-full rounded-sm bg-transparent py-sm pl-10 pr-md font-mono text-sm text-text-primary placeholder:text-outline focus:bg-bg-chip focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="mb-xs flex items-center justify-between">
+                      <label
+                        htmlFor="login-senha"
+                        className="block font-mono text-xs uppercase tracking-wide text-text-primary"
+                      >
+                        Senha de segurança
+                      </label>
+                      <span className="font-mono text-xs text-outline">CRIPTO-TOKEN // SIAB-PKI</span>
+                    </div>
+                    <div className="relative rounded-sm bg-bg-primary">
+                      <Icon
+                        name="key"
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-outline"
+                      />
+                      <input
+                        id="login-senha"
+                        name="senha"
+                        type={mostrarSenha ? "text" : "password"}
+                        autoComplete="current-password"
+                        required
+                        value={senha}
+                        onChange={(e) => setSenha(e.target.value)}
+                        placeholder="••••••••••••••••••••"
+                        className="w-full rounded-sm bg-transparent py-sm pl-10 pr-10 font-mono text-sm text-text-primary placeholder:text-outline focus:bg-bg-chip focus:outline-none"
+                      />
+                      <button
+                        type="button"
+                        aria-label="Alternar visibilidade da senha"
+                        onClick={() => setMostrarSenha((v) => !v)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-outline transition-colors hover:text-text-primary focus:outline-none"
+                      >
+                        <Icon name={mostrarSenha ? "visibility_off" : "visibility"} className="text-[18px]" />
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
 
               <button
                 type="submit"
@@ -150,7 +224,13 @@ export default function LoginPage() {
                 className="flex items-center justify-center gap-sm rounded-md bg-accent-default px-md py-sm text-base font-semibold text-bg-primary transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <Icon name="fingerprint" filled className="text-[20px]" />
-                <span>{enviando ? "Autenticando..." : "Autenticar Administrador"}</span>
+                <span>
+                  {enviando
+                    ? "Autenticando..."
+                    : etapa === "mfa"
+                      ? "Verificar Código"
+                      : "Autenticar Administrador"}
+                </span>
               </button>
 
               {enviando && (

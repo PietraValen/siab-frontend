@@ -35,10 +35,15 @@ algo, replique o padrão visual existente em vez de inventar um novo.
 | `app/globals.css` | Tokens de design (`@theme`) — espelha as variáveis do Figma/Stitch |
 | `app/scan/page.tsx` | Tela principal, roda o dia inteiro (reconhecimento) |
 | `app/admin/enroll/page.tsx` | Cadastro biométrico — ação de admin logado (cria usuário + captura o rosto) |
-| `app/admin/` | Painel administrativo (layout com sidebar + 4 subpáginas: usuários, cadastro, logs, relatórios) |
+| `app/admin/` | Painel administrativo (layout com sidebar + subpáginas: usuários, cadastro, logs, relatórios, terminais, segurança da conta) |
 | `components/ui/` | Button, Input, Badge, StatusPill, Card, NavItem, Icon — espelham os componentes do design system 1:1 |
-| `components/CameraCapture.tsx` | Wrapper de `getUserMedia` + captura de frame |
-| `lib/api.ts` | Toda chamada HTTP ao back-end passa por aqui |
+| `components/CameraCapture.tsx` | Wrapper de `getUserMedia` + captura de frame (`capturarBlob()` para sequências) |
+| `components/CopyButton.tsx` | Botão "Copiar" (clipboard) — fora de `ui/` porque tem comportamento |
+| `app/admin/terminais/page.tsx` | Cadastro/revogação dos terminais (portas) — mostra o id + chave HMAC uma única vez para parear o `/scan` |
+| `app/admin/seguranca/page.tsx` | MFA (TOTP) da conta do admin logado |
+| `lib/api.ts` | Toda chamada HTTP ao back-end passa por aqui (cookie de sessão + header anti-CSRF automáticos; `ApiError` com a `mensagem` do back-end) |
+| `lib/auth.ts` | Sessão do painel via `GET /api/admin/sessao` + logout (o token fica só no cookie HttpOnly) |
+| `lib/terminal.ts` | Pareamento do quiosque `/scan` (chave HMAC não extraível em IndexedDB) e assinatura de cada scan (mensagem canônica `SIAB-SCAN-v1`) |
 | `lib/types.ts` | Tipos espelhando os DTOs Java — mantidos manualmente em sincronia |
 
 ## Estado atual — pendências mais importantes (nesta ordem)
@@ -48,16 +53,14 @@ algo, replique o padrão visual existente em vez de inventar um novo.
    em intervalo, usando o `ref` do `CameraCapture` (ver TODO detalhado
    dentro de `app/scan/page.tsx`). Deixado manual de propósito por
    enquanto, para o grupo poder testar frame a frame.
-2. **Exportação de PDF em `/admin/reports`**: bloqueado até o back-end
-   implementar isso de verdade (ver `CLAUDE.md` do back-end).
-3. **Cookie httpOnly para o token do admin**: hoje o token fica em
-   `localStorage` (ver limitação documentada em `lib/auth.ts`) — aceitável
-   para o escopo do projeto, mas não para produção real.
 
 Resolvidas: login + guard do painel admin (`app/login/page.tsx`,
-`lib/auth.ts`, guard em `app/admin/layout.tsx`) e o cadastro biométrico
+`lib/auth.ts`, guard em `app/admin/layout.tsx`), o cadastro biométrico
 como ação de admin logado (`app/admin/enroll/page.tsx`, que cria o
-usuário via `api.criarUsuario` e só depois associa o rosto capturado).
+usuário via `api.criarUsuario` e só depois associa o rosto capturado) e o
+token do admin em cookie HttpOnly (`SIAB_TOKEN`, gravado pelo back-end;
+nada de sessão em `localStorage`, ver `lib/auth.ts`). A exportação de PDF
+em `/admin/reports` também já funciona (o back-end gera o PDF de verdade).
 
 ## Harness de testes
 
@@ -71,6 +74,11 @@ Testes em `tests/ui/` cobrem os componentes puros (Button, Badge,
 StatusPill) e já passam. Ao adicionar lógica nova (ex.: o guard de
 autenticação), adicione testes no mesmo estilo — RTL (`render`, `screen`,
 `fireEvent`), sem mockar excessivamente.
+
+`tests/lib/terminal.test.ts` roda no ambiente `node` (não jsdom) porque
+usa a WebCrypto do Node para conferir o HMAC contra `node:crypto`. A
+persistência do pareamento em IndexedDB não tem teste automatizado (jsdom
+não tem IndexedDB) — valide no navegador.
 
 Não existe teste automatizado para `CameraCapture` (depende de
 `getUserMedia`, que não existe em jsdom) — validação dessa parte é manual,

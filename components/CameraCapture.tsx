@@ -3,12 +3,15 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState, type ReactNode } from "react";
 
 export type CameraCaptureHandle = {
+  /** Captura um frame e entrega via onCapture. */
   capturarFrame: () => void;
+  /** Captura um frame e devolve o JPEG direto (null se a câmera não estiver pronta). */
+  capturarBlob: () => Promise<Blob | null>;
 };
 
 type CameraCaptureProps = {
   /** Chamado com o frame capturado (JPEG) quando um frame é tirado. */
-  onCapture: (imagem: Blob) => void;
+  onCapture?: (imagem: Blob) => void;
   /** Se true, mostra o botão de captura; se false, é controlado via ref (ver CameraCaptureHandle). */
   showCaptureButton?: boolean;
   /** Sobrepõe guias/retículos decorativos por cima do vídeo (posicionamento absoluto). */
@@ -31,10 +34,9 @@ type CameraCaptureProps = {
  *   <CameraCapture ref={camRef} onCapture={...} showCaptureButton={false} />
  *   camRef.current?.capturarFrame();
  *
- * TODO (liveness no front-end): se o grupo decidir implementar a técnica
- * de "piscar de olhos" (ver LivenessService no back-end), quem chama este
- * componente precisará acumular uma SEQUÊNCIA de frames (chamando
- * capturarFrame() várias vezes em intervalo curto), não um único Blob.
+ * Para o liveness por piscada (ver LivenessService no back-end), a tela
+ * /scan acumula uma SEQUÊNCIA de frames chamando capturarBlob() várias
+ * vezes em intervalo curto.
  */
 export const CameraCapture = forwardRef<CameraCaptureHandle, CameraCaptureProps>(
   function CameraCapture(
@@ -73,27 +75,27 @@ export const CameraCapture = forwardRef<CameraCaptureHandle, CameraCaptureProps>
       };
     }, []);
 
-    function capturarFrame() {
+    function capturarBlob(): Promise<Blob | null> {
       const video = videoRef.current;
       const canvas = canvasRef.current;
-      if (!video || !canvas) return;
+      if (!video || !canvas || !video.videoWidth) return Promise.resolve(null);
 
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       const ctx = canvas.getContext("2d");
-      if (!ctx) return;
+      if (!ctx) return Promise.resolve(null);
 
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      canvas.toBlob(
-        (blob) => {
-          if (blob) onCapture(blob);
-        },
-        "image/jpeg",
-        0.9,
-      );
+      return new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.9));
     }
 
-    useImperativeHandle(ref, () => ({ capturarFrame }));
+    function capturarFrame() {
+      capturarBlob().then((blob) => {
+        if (blob) onCapture?.(blob);
+      });
+    }
+
+    useImperativeHandle(ref, () => ({ capturarFrame, capturarBlob }));
 
     if (erro) {
       return (
@@ -111,7 +113,6 @@ export const CameraCapture = forwardRef<CameraCaptureHandle, CameraCaptureProps>
             "relative w-full overflow-hidden rounded-lg border border-dashed border-accent-default bg-black"
           }
         >
-          {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
           <video
             ref={videoRef}
             autoPlay

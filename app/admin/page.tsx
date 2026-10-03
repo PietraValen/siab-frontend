@@ -5,13 +5,19 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Icon } from "@/components/ui/Icon";
 import { api } from "@/lib/api";
-import { obterToken } from "@/lib/auth";
 import type { AccessSummary, Usuario } from "@/lib/types";
 
 function iniciais(nome: string) {
   const partes = nome.trim().split(/\s+/);
   return ((partes[0]?.[0] ?? "") + (partes[1]?.[0] ?? "")).toUpperCase();
 }
+
+// Classes estáticas (ver StatusPill): mesmo formato retangular dos badges
+// de nível, sem cor de nível — o PIN é só um indicador de segundo fator.
+const estiloPin = {
+  comPin: "text-accent-default bg-accent-default/10 border-accent-default/40",
+  semPin: "text-outline bg-bg-chip border-border-default",
+} as const;
 
 export default function AdminUsuariosPage() {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
@@ -20,8 +26,7 @@ export default function AdminUsuariosPage() {
   const [erro, setErro] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = obterToken() ?? "";
-    Promise.all([api.listarUsuarios(token), api.resumoDeAcessos(token)])
+    Promise.all([api.listarUsuarios(), api.resumoDeAcessos()])
       .then(([usuariosRes, resumoRes]) => {
         setUsuarios(usuariosRes);
         setResumo(resumoRes);
@@ -73,6 +78,7 @@ export default function AdminUsuariosPage() {
                 <th className="px-lg py-sm font-medium">Identificação</th>
                 <th className="px-lg py-sm font-medium">Cargo</th>
                 <th className="px-lg py-sm font-medium">Nível</th>
+                <th className="px-lg py-sm font-medium">PIN</th>
               </tr>
             </thead>
             <tbody>
@@ -92,6 +98,16 @@ export default function AdminUsuariosPage() {
                   <td className="px-lg py-sm text-text-secondary">{usuario.cargo ?? "—"}</td>
                   <td className="px-lg py-sm">
                     <Badge nivel={usuario.nivelAcesso} />
+                  </td>
+                  <td className="px-lg py-sm">
+                    <span
+                      className={`inline-flex items-center gap-1 rounded-sm border px-2 py-0.5 font-mono text-xs font-medium uppercase tracking-wide ${
+                        usuario.possuiPin ? estiloPin.comPin : estiloPin.semPin
+                      }`}
+                    >
+                      <Icon name={usuario.possuiPin ? "pin" : "remove"} className="text-[14px]" />
+                      {usuario.possuiPin ? "Cadastrado" : "Sem PIN"}
+                    </span>
                   </td>
                 </tr>
               ))}

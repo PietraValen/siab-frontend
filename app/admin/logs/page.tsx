@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { Icon } from "@/components/ui/Icon";
 import { api } from "@/lib/api";
-import { obterToken } from "@/lib/auth";
 import type { AccessLog } from "@/lib/types";
 
 function formatarData(iso: string) {
@@ -23,7 +22,7 @@ export default function AdminLogsPage() {
 
   useEffect(() => {
     api
-      .listarLogs(obterToken() ?? "")
+      .listarLogs()
       .then(setLogs)
       .catch((err) => setErro(err instanceof Error ? err.message : "Erro ao carregar logs."))
       .finally(() => setCarregando(false));
@@ -67,7 +66,9 @@ export default function AdminLogsPage() {
               <tr>
                 <th className="px-lg py-sm font-medium">Horário</th>
                 <th className="px-lg py-sm font-medium">Identificação</th>
+                <th className="px-lg py-sm font-medium">Terminal</th>
                 <th className="px-lg py-sm font-medium">Confiança</th>
+                <th className="px-lg py-sm font-medium">Motivo</th>
                 <th className="px-lg py-sm text-right font-medium">Decisão</th>
               </tr>
             </thead>
@@ -91,9 +92,16 @@ export default function AdminLogsPage() {
                       <span className="font-medium text-text-primary">{log.nomeUsuario}</span>
                     </div>
                   </td>
+                  <td className="px-lg py-sm">
+                    <div className="flex flex-col">
+                      <span className="text-text-secondary">{log.terminal ?? "—"}</span>
+                      {log.ip && <span className="font-mono text-xs text-outline">{log.ip}</span>}
+                    </div>
+                  </td>
                   <td className="px-lg py-sm font-mono text-text-secondary">
                     {log.similaridade != null ? `${(log.similaridade * 100).toFixed(1)}%` : "—"}
                   </td>
+                  <td className="max-w-xs px-lg py-sm text-xs text-text-secondary">{log.motivo ?? "—"}</td>
                   <td className="px-lg py-sm text-right">
                     <StatusPill tipo={log.resultado === "CONCEDIDO" ? "concedido" : "negado"} />
                   </td>

@@ -12,7 +12,7 @@ const NIVEIS_ACESSO = [
     tag: "Nível 2",
     cor: "text-status-warning bg-status-warning/15",
     nome: "Diretoria",
-    descricao: "Acesso aos compartimentos de amostras e à custódia probatória restrita.",
+    descricao: "Acesso aos compartimentos de amostras e aos relatórios restritos de cada divisão.",
   },
   {
     tag: "Nível 3",
@@ -20,7 +20,7 @@ const NIVEIS_ACESSO = [
     nome: "Ministro",
     destaque: true,
     descricao:
-      "Acesso irrestrito ao núcleo do cofre central. Requer correspondência biométrica facial estrita.",
+      "Acesso ao núcleo do cofre, onde ficam os relatórios ultrassecretos sobre toxinas. Exige rosto e PIN.",
   },
 ] as const;
 
@@ -36,29 +36,29 @@ const ETAPAS_PIPELINE = [
     numero: "02",
     icone: "tune",
     titulo: "Pré-processamento",
-    descricao: "Normalização de iluminação e correção de enquadramento da imagem capturada.",
-    tag: "Normalização",
+    descricao: "Conversão para escala de cinza e equalização de histograma, reduzindo o efeito da iluminação.",
+    tag: "Equalização",
   },
   {
     numero: "03",
     icone: "center_focus_strong",
     titulo: "Detecção facial",
-    descricao: "Localização do rosto no quadro e verificação de que é uma pessoa real (liveness).",
-    tag: "Detecção de rosto",
+    descricao: "Localização do rosto no quadro e prova de vida (textura da pele e piscada) contra fotos e telas.",
+    tag: "Haar Cascade",
   },
   {
     numero: "04",
     icone: "hub",
     titulo: "Extração de características",
-    descricao: "Geração do embedding facial — a representação numérica usada na comparação.",
-    tag: "Embedding facial",
+    descricao: "Histogramas de padrões binários locais (LBP) por região do rosto, formando o vetor usado na comparação.",
+    tag: "LBPH",
   },
   {
     numero: "05",
     icone: "verified_user",
     titulo: "Reconhecimento e decisão",
-    descricao: "Comparação com a base cadastrada e liberação de acesso conforme o nível de permissão.",
-    tag: "Similaridade",
+    descricao: "Identifica quem é (busca 1:N na base), autentica pelo limiar de distância e libera ou bloqueia conforme o nível da porta.",
+    tag: "Identificação + autenticação",
   },
 ] as const;
 
@@ -67,21 +67,21 @@ const MATRIZ_ZONAS = [
     zona: "Antecâmara Externa (Zona Alpha)",
     perfil: "Operadores de TI, vigilância e suporte",
     nivel: "Geral",
-    tempo: "15 segundos",
+    fatores: "Rosto + prova de vida",
     critico: false,
   },
   {
-    zona: "Custódia Probatória (Zona Beta)",
-    perfil: "Diretoria e curadoria de ativos críticos",
+    zona: "Arquivo Restrito das Divisões (Zona Beta)",
+    perfil: "Diretores de divisões específicas",
     nivel: "Diretoria",
-    tempo: "10 segundos",
+    fatores: "Rosto + prova de vida",
     critico: false,
   },
   {
     zona: "Núcleo do Cofre Central (Zona Ômega)",
-    perfil: "Ministro / segurança máxima",
+    perfil: "Ministro do Meio Ambiente",
     nivel: "Ministro",
-    tempo: "06 segundos",
+    fatores: "Rosto + prova de vida + PIN",
     critico: true,
   },
 ] as const;
@@ -144,16 +144,17 @@ export default function HomePage() {
                 Projeto Acadêmico · APS — PIVC — UNIP
               </span>
               <span className="rounded-sm border border-status-success/30 bg-status-success/10 px-xs py-0.5 font-mono text-xs text-status-success">
-                Hardware Pronto
+                Ministério do Meio Ambiente
               </span>
             </div>
             <h1 className="text-[32px] font-semibold leading-tight tracking-tight text-text-primary md:text-[40px]">
               Controle de Acesso Biométrico Facial para Ambientes de Segurança Máxima
             </h1>
             <p className="max-w-2xl text-base leading-relaxed text-text-secondary">
-              Simulação computacional de controle e auditoria física para um cofre de segurança
-              máxima, integrando reconhecimento facial com três níveis de permissão configuráveis
-              e rastreabilidade completa de cada tentativa de acesso.
+              A última linha de defesa do cofre de segurança máxima do Ministério do Meio
+              Ambiente, onde estão os relatórios ultrassecretos sobre toxinas de altíssimo risco.
+              O sistema identifica e autentica o rosto de quem se aproxima, libera ou bloqueia a
+              entrada conforme três níveis de permissão e registra cada tentativa na auditoria.
             </p>
             <div className="flex flex-wrap items-center gap-md pt-sm">
               <Link href="/login" className={ctaPrimaria}>
@@ -293,7 +294,7 @@ export default function HomePage() {
                   <th className="p-sm">Zona de Acesso</th>
                   <th className="p-sm">Perfil Autorizado</th>
                   <th className="p-sm">Nível Exigido</th>
-                  <th className="p-sm">Tempo Limite</th>
+                  <th className="p-sm">Fatores Exigidos</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border-default">
@@ -302,7 +303,7 @@ export default function HomePage() {
                     <td className="p-sm font-medium text-text-primary">{linha.zona}</td>
                     <td className="p-sm text-text-secondary">{linha.perfil}</td>
                     <td className="p-sm text-accent-default">{linha.nivel}</td>
-                    <td className="p-sm text-text-primary">{linha.tempo}</td>
+                    <td className="p-sm text-text-primary">{linha.fatores}</td>
                   </tr>
                 ))}
               </tbody>

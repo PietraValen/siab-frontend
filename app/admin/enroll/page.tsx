@@ -28,7 +28,7 @@ const NIVEIS: {
     tag: "Nível 02",
     corTexto: "text-status-warning",
     corFundo: "bg-status-warning/10",
-    descricao: "Acesso aos compartimentos de amostras e custódia probatória restrita.",
+    descricao: "Acesso aos compartimentos de amostras e aos relatórios restritos de cada divisão.",
   },
   {
     id: 3,
@@ -36,7 +36,7 @@ const NIVEIS: {
     tag: "Nível 03",
     corTexto: "text-status-danger",
     corFundo: "bg-status-danger/10",
-    descricao: "Acesso total ao núcleo do cofre central (segurança máxima).",
+    descricao: "Acesso ao núcleo do cofre (relatórios ultrassecretos). Exige rosto e PIN.",
   },
 ];
 

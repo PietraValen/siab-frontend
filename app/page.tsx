@@ -12,7 +12,7 @@ const NIVEIS_ACESSO = [
     tag: "Nível 2",
     cor: "text-status-warning bg-status-warning/15",
     nome: "Diretoria",
-    descricao: "Acesso aos compartimentos de amostras e aos relatórios restritos de cada divisão.",
+    descricao: "Acesso aos compartimentos de amostras e aos relatórios restritos da Diretoria.",
   },
   {
     tag: "Nível 3",
@@ -71,7 +71,7 @@ const MATRIZ_ZONAS = [
     critico: false,
   },
   {
-    zona: "Arquivo Restrito das Divisões (Zona Beta)",
+    zona: "Arquivo Restrito da Diretoria (Zona Beta)",
     perfil: "Diretores de divisões específicas",
     nivel: "Diretoria",
     fatores: "Rosto + prova de vida",
@@ -151,10 +151,11 @@ export default function HomePage() {
               Controle de Acesso Biométrico Facial para Ambientes de Segurança Máxima
             </h1>
             <p className="max-w-2xl text-base leading-relaxed text-text-secondary">
-              A última linha de defesa do cofre de segurança máxima do Ministério do Meio
-              Ambiente, onde estão os relatórios ultrassecretos sobre toxinas de altíssimo risco.
-              O sistema identifica e autentica o rosto de quem se aproxima, libera ou bloqueia a
-              entrada conforme três níveis de permissão e registra cada tentativa na auditoria.
+              Simulação da última linha de defesa do cofre de segurança máxima do Ministério do
+              Meio Ambiente, onde estão os relatórios ultrassecretos sobre toxinas de altíssimo
+              risco. O terminal identifica e autentica o rosto de quem está diante dele, decide se
+              libera ou bloqueia a entrada conforme três níveis de permissão e registra cada
+              tentativa na auditoria.
             </p>
             <div className="flex flex-wrap items-center gap-md pt-sm">
               <Link href="/login" className={ctaPrimaria}>

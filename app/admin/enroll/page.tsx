@@ -28,7 +28,7 @@ const NIVEIS: {
     tag: "Nível 02",
     corTexto: "text-status-warning",
     corFundo: "bg-status-warning/10",
-    descricao: "Acesso aos compartimentos de amostras e aos relatórios restritos de cada divisão.",
+    descricao: "Acesso aos compartimentos de amostras e aos relatórios restritos da Diretoria.",
   },
   {
     id: 3,

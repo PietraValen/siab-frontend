@@ -5,8 +5,9 @@ Consome a API do repositório `siab-backend`.
 
 **Cenário da APS:** no Ministério do Meio Ambiente há um cofre de segurança
 máxima com relatórios ultrassecretos sobre toxinas de altíssimo risco. O
-SIAB é a última linha de defesa desse cofre: identifica e autentica o rosto
-de quem chega a uma porta e libera ou bloqueia a entrada conforme três
+SIAB simula a última linha de defesa desse cofre: identifica e autentica o
+rosto de quem está diante do terminal de uma porta e decide se libera ou
+bloqueia a entrada conforme três
 níveis de permissão (Geral, Diretoria e Ministro; no nível Ministro, rosto
 e PIN).
 

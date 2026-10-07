@@ -64,12 +64,12 @@ export default function LoginPage() {
   const enviando = status === "enviando";
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-bg-primary p-lg md:p-2xl">
+    <main className="flex min-h-screen items-center justify-center bg-bg-primary p-md sm:p-lg md:p-2xl">
       <div className="grid w-full max-w-5xl grid-cols-1 gap-lg lg:grid-cols-12">
         {/* Painel principal de autenticação */}
-        <div className="flex flex-col justify-between rounded-lg bg-bg-panel p-xl lg:col-span-7">
+        <div className="flex flex-col justify-between rounded-lg bg-bg-panel p-lg sm:p-xl lg:col-span-7">
           <div>
-            <div className="mb-lg flex items-center justify-between rounded-sm bg-bg-primary px-md py-sm">
+            <div className="mb-lg flex flex-wrap items-center justify-between gap-sm rounded-sm bg-bg-primary px-md py-sm">
               <div className="flex items-center gap-sm">
                 <Icon name="security" filled className="text-[20px] text-accent-default" />
                 <span className="font-mono text-xs uppercase tracking-wider text-accent-default">
@@ -78,7 +78,7 @@ export default function LoginPage() {
               </div>
               <div className="flex items-center gap-xs rounded-sm bg-bg-chip px-sm py-0.5">
                 <span className="h-2 w-2 rounded-full bg-status-success" />
-                <span className="font-mono text-xs text-text-muted">HOST: SIAB-SEC-NODE-04</span>
+                <span className="whitespace-nowrap font-mono text-xs text-text-muted">HOST: SIAB-SEC-NODE-04</span>
               </div>
             </div>
 
@@ -89,7 +89,7 @@ export default function LoginPage() {
               <h1 className="mb-sm text-2xl font-semibold text-text-primary">
                 Acesso Restrito ao Painel Administrativo
               </h1>
-              <div className="mt-md rounded-sm bg-bg-chip p-md">
+              <div className="mt-md rounded-sm bg-bg-chip p-sm sm:p-md">
                 <div className="flex items-start gap-sm">
                   <Icon name="info" className="mt-0.5 shrink-0 text-[18px] text-accent-default" />
                   <p className="text-sm leading-relaxed text-text-muted">
@@ -270,7 +270,7 @@ export default function LoginPage() {
 
         {/* Painel lateral: telemetria institucional & auditoria */}
         <div className="flex flex-col justify-between gap-md lg:col-span-5">
-          <div className="flex flex-1 flex-col justify-between rounded-lg bg-bg-panel p-lg">
+          <div className="flex flex-1 flex-col justify-between rounded-lg bg-bg-panel p-md sm:p-lg">
             <div>
               <div className="mb-md flex items-center gap-sm">
                 <Icon name="gavel" filled className="text-[20px] text-status-warning" />
@@ -278,7 +278,7 @@ export default function LoginPage() {
                   Protocolo SIAB / Auditoria Contínua
                 </span>
               </div>
-              <div className="mb-md rounded-sm bg-bg-chip-strong p-md">
+              <div className="mb-md rounded-sm bg-bg-chip-strong p-sm sm:p-md">
                 <div className="flex items-start gap-sm">
                   <Icon name="warning" className="mt-0.5 shrink-0 text-[20px] text-status-warning" />
                   <div>
@@ -293,15 +293,15 @@ export default function LoginPage() {
                 </div>
               </div>
               <div className="flex flex-col gap-sm">
-                <div className="flex items-center justify-between rounded-sm bg-bg-primary p-sm font-mono text-xs">
+                <div className="flex flex-wrap items-center justify-between gap-x-sm rounded-sm bg-bg-primary p-sm font-mono text-xs">
                   <span className="text-outline">Tentativas Permitidas:</span>
                   <span className="text-text-primary">03 consecutivas</span>
                 </div>
-                <div className="flex items-center justify-between rounded-sm bg-bg-primary p-sm font-mono text-xs">
+                <div className="flex flex-wrap items-center justify-between gap-x-sm rounded-sm bg-bg-primary p-sm font-mono text-xs">
                   <span className="text-outline">Bloqueio Preventivo:</span>
                   <span className="text-status-danger">Automático (NOC/SIAB)</span>
                 </div>
-                <div className="flex items-center justify-between rounded-sm bg-bg-primary p-sm font-mono text-xs">
+                <div className="flex flex-wrap items-center justify-between gap-x-sm rounded-sm bg-bg-primary p-sm font-mono text-xs">
                   <span className="text-outline">Isolamento de Credencial:</span>
                   <span className="text-status-success">Ativo via HSM</span>
                 </div>
@@ -318,7 +318,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <div className="flex items-center justify-between rounded-lg bg-bg-panel p-md">
+          <div className="flex flex-wrap items-center justify-between gap-sm rounded-lg bg-bg-panel p-md">
             <div className="flex items-center gap-sm">
               <Icon name="help_center" className="text-[20px] text-outline" />
               <div>

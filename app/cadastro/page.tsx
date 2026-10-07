@@ -29,8 +29,8 @@ const REQUISITOS_SENHA = [
 
 function TelaCentralizada({ children }: { children: React.ReactNode }) {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-bg-primary p-lg">
-      <div className="w-full max-w-md rounded-lg bg-bg-panel p-2xl text-center">{children}</div>
+    <main className="flex min-h-screen items-center justify-center bg-bg-primary p-md sm:p-lg">
+      <div className="w-full max-w-md rounded-lg bg-bg-panel p-lg text-center sm:p-2xl">{children}</div>
     </main>
   );
 }
@@ -114,10 +114,10 @@ export default function CadastroPage() {
   const enviando = status === "enviando";
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-bg-primary p-lg md:p-2xl">
+    <main className="flex min-h-screen items-center justify-center bg-bg-primary p-md sm:p-lg md:p-2xl">
       <div className="grid w-full max-w-5xl grid-cols-1 gap-lg lg:grid-cols-12">
         {/* Formulário principal de credenciamento */}
-        <section className="flex flex-col gap-lg rounded-lg bg-bg-panel p-xl lg:col-span-7">
+        <section className="flex flex-col gap-lg rounded-lg bg-bg-panel p-lg sm:p-xl lg:col-span-7">
           <div>
             <span className="mb-1 block font-mono text-xs uppercase tracking-widest text-accent-default">
               Protocolo de Ingresso · Módulo 03
@@ -130,7 +130,7 @@ export default function CadastroPage() {
             </p>
           </div>
 
-          <div className="flex items-start gap-md rounded-lg bg-bg-chip p-md">
+          <div className="flex items-start gap-sm rounded-lg bg-bg-chip p-sm sm:gap-md sm:p-md">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-bg-chip-strong text-status-warning">
               <Icon name="gavel" className="text-[22px]" />
             </div>
@@ -293,7 +293,7 @@ export default function CadastroPage() {
 
         {/* Painel lateral: políticas de segurança */}
         <aside className="flex flex-col gap-lg lg:col-span-5">
-          <div className="flex flex-col gap-md rounded-lg bg-bg-panel p-lg">
+          <div className="flex flex-col gap-md rounded-lg bg-bg-panel p-md sm:p-lg">
             <div className="flex items-center gap-sm">
               <Icon name="verified_user" className="text-[20px] text-accent-default" />
               <span className="text-base font-semibold text-text-primary">
@@ -301,7 +301,7 @@ export default function CadastroPage() {
               </span>
             </div>
 
-            <div className="flex items-start gap-md rounded-lg bg-bg-chip p-md">
+            <div className="flex items-start gap-sm rounded-lg bg-bg-chip p-sm sm:gap-md sm:p-md">
               <Icon name="key" className="mt-0.5 shrink-0 text-[20px] text-accent-default" />
               <div>
                 <span className="text-sm font-semibold text-text-primary">CRITÉRIOS DE SENHA FORTE</span>
@@ -312,7 +312,7 @@ export default function CadastroPage() {
               </div>
             </div>
 
-            <div className="flex items-start gap-md rounded-lg bg-bg-chip p-md">
+            <div className="flex items-start gap-sm rounded-lg bg-bg-chip p-sm sm:gap-md sm:p-md">
               <Icon name="timer_off" className="mt-0.5 shrink-0 text-[20px] text-status-warning" />
               <div>
                 <span className="text-sm font-semibold text-text-primary">
@@ -324,7 +324,7 @@ export default function CadastroPage() {
               </div>
             </div>
 
-            <div className="flex items-start gap-md rounded-lg bg-bg-chip p-md">
+            <div className="flex items-start gap-sm rounded-lg bg-bg-chip p-sm sm:gap-md sm:p-md">
               <Icon name="enhanced_encryption" className="mt-0.5 shrink-0 text-[20px] text-status-success" />
               <div>
                 <span className="text-sm font-semibold text-text-primary">

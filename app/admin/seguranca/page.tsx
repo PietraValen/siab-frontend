@@ -103,7 +103,7 @@ export default function AdminSegurancaPage() {
   }
 
   return (
-    <div className="flex flex-col gap-xl">
+    <div className="flex flex-col gap-lg sm:gap-xl">
       <div className="flex flex-col gap-xs rounded-lg bg-bg-panel/50 p-md">
         <span className="font-mono text-xs uppercase tracking-wider text-accent-default">
           Credencial do Operador
@@ -115,13 +115,13 @@ export default function AdminSegurancaPage() {
         </p>
       </div>
 
-      <div className="flex max-w-2xl flex-col gap-lg rounded-lg bg-bg-panel p-lg">
-        <div className="flex items-center justify-between gap-sm">
-          <div className="flex items-center gap-sm">
-            <Icon name="phonelink_lock" className="text-[22px] text-accent-default" />
-            <div className="flex flex-col">
+      <div className="flex max-w-2xl flex-col gap-lg rounded-lg bg-bg-panel p-md sm:p-lg">
+        <div className="flex flex-wrap items-center justify-between gap-sm">
+          <div className="flex min-w-0 items-center gap-sm">
+            <Icon name="phonelink_lock" className="shrink-0 text-[22px] text-accent-default" />
+            <div className="flex min-w-0 flex-col">
               <span className="text-base font-semibold text-text-primary">Autenticação em dois fatores</span>
-              <span className="font-mono text-xs text-outline">{sessao?.username ?? "—"}</span>
+              <span className="break-all font-mono text-xs text-outline">{sessao?.username ?? "—"}</span>
             </div>
           </div>
           {sessao && (

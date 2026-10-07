@@ -91,7 +91,7 @@ export default function AdminTerminaisPage() {
   }
 
   return (
-    <div className="flex flex-col gap-xl">
+    <div className="flex flex-col gap-lg sm:gap-xl">
       <div className="flex flex-col gap-xs rounded-lg bg-bg-panel/50 p-md">
         <span className="font-mono text-xs uppercase tracking-wider text-accent-default">
           Infraestrutura Física
@@ -106,7 +106,7 @@ export default function AdminTerminaisPage() {
       {erro && <p className="text-sm text-status-danger">{erro}</p>}
 
       {criado && (
-        <div className="flex flex-col gap-md rounded-lg border border-status-warning/40 bg-status-warning/10 p-lg">
+        <div className="flex flex-col gap-md rounded-lg border border-status-warning/40 bg-status-warning/10 p-md sm:p-lg">
           <div className="flex items-start gap-sm">
             <Icon name="key" className="mt-0.5 shrink-0 text-[20px] text-status-warning" />
             <div className="flex flex-col gap-xs">
@@ -146,7 +146,7 @@ export default function AdminTerminaisPage() {
       )}
 
       <div className="grid grid-cols-1 items-start gap-lg lg:grid-cols-12">
-        <form onSubmit={handleSubmit} className="flex flex-col gap-lg rounded-lg bg-bg-panel p-lg lg:col-span-4">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-lg rounded-lg bg-bg-panel p-md sm:p-lg lg:col-span-4">
           <div className="flex items-center gap-xs">
             <Icon name="add_circle" className="text-[20px] text-accent-default" />
             <span className="text-base font-semibold text-text-primary">Novo terminal</span>
@@ -190,12 +190,12 @@ export default function AdminTerminaisPage() {
         </form>
 
         <div className="overflow-hidden rounded-lg bg-bg-panel lg:col-span-8">
-          <div className="flex items-center justify-between gap-sm border-b border-border-default bg-bg-chip px-lg py-sm">
+          <div className="flex items-center justify-between gap-sm border-b border-border-default bg-bg-chip px-md py-sm sm:px-lg">
             <div className="flex items-center gap-sm">
               <Icon name="sensor_door" className="text-[20px] text-accent-default" />
               <span className="text-sm font-semibold text-text-primary">Terminais cadastrados</span>
             </div>
-            <span className="font-mono text-xs text-outline">{terminais.length} registro(s)</span>
+            <span className="shrink-0 whitespace-nowrap font-mono text-xs text-outline">{terminais.length} registro(s)</span>
           </div>
 
           {carregando ? (
@@ -206,56 +206,58 @@ export default function AdminTerminaisPage() {
               tentativas.
             </p>
           ) : (
-            <table className="w-full text-left text-sm">
-              <thead className="bg-bg-chip font-mono text-xs uppercase tracking-wide text-outline">
-                <tr>
-                  <th className="px-lg py-sm font-medium">Porta</th>
-                  <th className="px-lg py-sm font-medium">Nível</th>
-                  <th className="px-lg py-sm font-medium">Último uso</th>
-                  <th className="px-lg py-sm text-right font-medium">Situação</th>
-                </tr>
-              </thead>
-              <tbody>
-                {terminais.map((terminal) => (
-                  <tr key={terminal.id} className="border-t border-border-default hover:bg-bg-chip">
-                    <td className="px-lg py-sm">
-                      <div className="flex flex-col">
-                        <span className="text-text-primary">{terminal.nome}</span>
-                        <span className="font-mono text-xs text-outline">ID: {terminal.id}</span>
-                      </div>
-                    </td>
-                    <td className="px-lg py-sm">
-                      <Badge nivel={terminal.nivelExigido} />
-                    </td>
-                    <td className="whitespace-nowrap px-lg py-sm font-mono text-xs text-text-secondary">
-                      {formatarData(terminal.ultimoUsoEm)}
-                    </td>
-                    <td className="px-lg py-sm text-right">
-                      <div className="flex items-center justify-end gap-sm">
-                        <span
-                          className={`inline-flex items-center rounded-sm border px-2 py-0.5 font-mono text-xs font-medium uppercase ${
-                            terminal.ativo ? estiloSituacao.ativo : estiloSituacao.revogado
-                          }`}
-                        >
-                          {terminal.ativo ? "Ativo" : "Revogado"}
-                        </span>
-                        {terminal.ativo && (
-                          <button
-                            type="button"
-                            onClick={() => revogar(terminal)}
-                            onBlur={() => setRevogando((atual) => (atual === terminal.id ? null : atual))}
-                            className="flex items-center gap-xs font-mono text-xs text-status-danger transition-colors hover:text-text-primary"
-                          >
-                            <Icon name="block" className="text-[16px]" />
-                            {revogando === terminal.id ? "Confirmar" : "Revogar"}
-                          </button>
-                        )}
-                      </div>
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[600px] text-left text-sm">
+                <thead className="bg-bg-chip font-mono text-xs uppercase tracking-wide text-outline">
+                  <tr>
+                    <th className="px-md py-sm sm:px-lg font-medium">Porta</th>
+                    <th className="px-md py-sm sm:px-lg font-medium">Nível</th>
+                    <th className="px-md py-sm sm:px-lg font-medium">Último uso</th>
+                    <th className="px-md py-sm sm:px-lg text-right font-medium">Situação</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {terminais.map((terminal) => (
+                    <tr key={terminal.id} className="border-t border-border-default hover:bg-bg-chip">
+                      <td className="px-md py-sm sm:px-lg">
+                        <div className="flex flex-col">
+                          <span className="text-text-primary">{terminal.nome}</span>
+                          <span className="font-mono text-xs text-outline">ID: {terminal.id}</span>
+                        </div>
+                      </td>
+                      <td className="px-md py-sm sm:px-lg">
+                        <Badge nivel={terminal.nivelExigido} />
+                      </td>
+                      <td className="whitespace-nowrap px-md py-sm sm:px-lg font-mono text-xs text-text-secondary">
+                        {formatarData(terminal.ultimoUsoEm)}
+                      </td>
+                      <td className="px-md py-sm sm:px-lg text-right">
+                        <div className="flex items-center justify-end gap-sm">
+                          <span
+                            className={`inline-flex items-center rounded-sm border px-2 py-0.5 font-mono text-xs font-medium uppercase ${
+                              terminal.ativo ? estiloSituacao.ativo : estiloSituacao.revogado
+                            }`}
+                          >
+                            {terminal.ativo ? "Ativo" : "Revogado"}
+                          </span>
+                          {terminal.ativo && (
+                            <button
+                              type="button"
+                              onClick={() => revogar(terminal)}
+                              onBlur={() => setRevogando((atual) => (atual === terminal.id ? null : atual))}
+                              className="flex items-center gap-xs font-mono text-xs text-status-danger transition-colors hover:text-text-primary"
+                            >
+                              <Icon name="block" className="text-[16px]" />
+                              {revogando === terminal.id ? "Confirmar" : "Revogar"}
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       </div>

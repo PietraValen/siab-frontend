@@ -58,7 +58,7 @@ export default function AdminReportsPage() {
   }
 
   return (
-    <div className="flex flex-col gap-xl">
+    <div className="flex flex-col gap-lg sm:gap-xl">
       <div className="flex flex-col gap-xs rounded-lg bg-bg-panel/50 p-md">
         <span className="font-mono text-xs uppercase tracking-wider text-accent-default">
           Auditoria Consolidada

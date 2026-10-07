@@ -109,6 +109,11 @@ sem ele, as chamadas em `lib/api.ts` vão falhar.
   runtime (ex.: `` `text-${variavel}` ``) — o compilador do Tailwind só
   reconhece classes que aparecem por extenso no código-fonte. Use um mapa
   de opções estáticas (ver `components/ui/StatusPill.tsx` como exemplo).
+- Layout responsivo (320 px até telas largas): no painel admin a sidebar
+  vira gaveta (botão de menu no cabeçalho) abaixo de `lg`, e tabelas
+  largas ficam dentro de um `div.overflow-x-auto` com `min-w-[...]` na
+  `<table>` — siga esse padrão em telas novas, com paddings menores no
+  celular (`p-md sm:p-lg`).
 - Ícones usam a fonte "Material Symbols Outlined" (carregada via `<link>`
   em `app/layout.tsx`) através do wrapper `components/ui/Icon.tsx` — não
   adicione outra biblioteca de ícones (lucide, heroicons etc.) sem

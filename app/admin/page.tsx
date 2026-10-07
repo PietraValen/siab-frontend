@@ -36,7 +36,7 @@ export default function AdminUsuariosPage() {
   }, []);
 
   return (
-    <div className="flex flex-col gap-xl">
+    <div className="flex flex-col gap-lg sm:gap-xl">
       <div className="flex flex-col gap-xs rounded-lg bg-bg-panel/50 p-md">
         <span className="font-mono text-xs uppercase tracking-wider text-accent-default">
           Sistema Integrado de Autenticação Biométrica
@@ -57,7 +57,7 @@ export default function AdminUsuariosPage() {
       </div>
 
       <div className="overflow-hidden rounded-lg bg-bg-panel">
-        <div className="flex items-center gap-sm border-b border-border-default bg-bg-chip px-lg py-sm">
+        <div className="flex items-center gap-sm border-b border-border-default bg-bg-chip px-md py-sm sm:px-lg">
           <Icon name="fingerprint" className="text-[20px] text-accent-default" />
           <span className="text-sm font-semibold text-text-primary">Usuários com biometria cadastrada</span>
         </div>
@@ -72,47 +72,49 @@ export default function AdminUsuariosPage() {
             para adicionar o primeiro.
           </p>
         ) : (
-          <table className="w-full text-left text-sm">
-            <thead className="bg-bg-chip font-mono text-xs uppercase tracking-wide text-outline">
-              <tr>
-                <th className="px-lg py-sm font-medium">Identificação</th>
-                <th className="px-lg py-sm font-medium">Cargo</th>
-                <th className="px-lg py-sm font-medium">Nível</th>
-                <th className="px-lg py-sm font-medium">PIN</th>
-              </tr>
-            </thead>
-            <tbody>
-              {usuarios.map((usuario) => (
-                <tr key={usuario.id} className="border-t border-border-default hover:bg-bg-chip">
-                  <td className="px-lg py-sm">
-                    <div className="flex items-center gap-sm">
-                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-sm bg-bg-chip-strong font-mono text-xs text-accent-default">
-                        {iniciais(usuario.nome)}
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-text-primary">{usuario.nome}</span>
-                        <span className="font-mono text-xs text-outline">ID: SIAB-{usuario.id}</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-lg py-sm text-text-secondary">{usuario.cargo ?? "—"}</td>
-                  <td className="px-lg py-sm">
-                    <Badge nivel={usuario.nivelAcesso} />
-                  </td>
-                  <td className="px-lg py-sm">
-                    <span
-                      className={`inline-flex items-center gap-1 rounded-sm border px-2 py-0.5 font-mono text-xs font-medium uppercase tracking-wide ${
-                        usuario.possuiPin ? estiloPin.comPin : estiloPin.semPin
-                      }`}
-                    >
-                      <Icon name={usuario.possuiPin ? "pin" : "remove"} className="text-[14px]" />
-                      {usuario.possuiPin ? "Cadastrado" : "Sem PIN"}
-                    </span>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[560px] text-left text-sm">
+              <thead className="bg-bg-chip font-mono text-xs uppercase tracking-wide text-outline">
+                <tr>
+                  <th className="px-md py-sm sm:px-lg font-medium">Identificação</th>
+                  <th className="px-md py-sm sm:px-lg font-medium">Cargo</th>
+                  <th className="px-md py-sm sm:px-lg font-medium">Nível</th>
+                  <th className="px-md py-sm sm:px-lg font-medium">PIN</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {usuarios.map((usuario) => (
+                  <tr key={usuario.id} className="border-t border-border-default hover:bg-bg-chip">
+                    <td className="px-md py-sm sm:px-lg">
+                      <div className="flex items-center gap-sm">
+                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-sm bg-bg-chip-strong font-mono text-xs text-accent-default">
+                          {iniciais(usuario.nome)}
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-text-primary">{usuario.nome}</span>
+                          <span className="font-mono text-xs text-outline">ID: SIAB-{usuario.id}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-md py-sm sm:px-lg text-text-secondary">{usuario.cargo ?? "—"}</td>
+                    <td className="px-md py-sm sm:px-lg">
+                      <Badge nivel={usuario.nivelAcesso} />
+                    </td>
+                    <td className="px-md py-sm sm:px-lg">
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-sm border px-2 py-0.5 font-mono text-xs font-medium uppercase tracking-wide ${
+                          usuario.possuiPin ? estiloPin.comPin : estiloPin.semPin
+                        }`}
+                      >
+                        <Icon name={usuario.possuiPin ? "pin" : "remove"} className="text-[14px]" />
+                        {usuario.possuiPin ? "Cadastrado" : "Sem PIN"}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>

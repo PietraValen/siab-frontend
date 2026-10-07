@@ -25,7 +25,7 @@ export function StatusPill({ tipo, texto }: StatusPillProps) {
 
   return (
     <span
-      className={`inline-flex items-center gap-2 rounded-sm border px-md py-sm font-mono text-sm font-semibold uppercase tracking-wide ${s.wrapper}`}
+      className={`inline-flex items-center gap-2 whitespace-nowrap rounded-sm border px-md py-sm font-mono text-sm font-semibold uppercase tracking-wide ${s.wrapper}`}
     >
       <span className={`h-2 w-2 rounded-full ${s.dot}`} aria-hidden />
       {texto ?? (isConcedido ? "Acesso Concedido" : "Acesso Negado")}

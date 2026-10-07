@@ -39,6 +39,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const router = useRouter();
   const [sessao, setSessao] = useState<Sessao | null>(null);
+  // Abaixo de lg a sidebar vira uma gaveta (off-canvas) aberta pelo botão
+  // de menu do cabeçalho; de lg para cima ela fica sempre visível.
+  const [menuAberto, setMenuAberto] = useState(false);
 
   useEffect(() => {
     let ativo = true;
@@ -55,6 +58,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     };
   }, [router]);
 
+  useEffect(() => {
+    if (!menuAberto) return;
+    const fecharComEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMenuAberto(false);
+    };
+    window.addEventListener("keydown", fecharComEsc);
+    return () => window.removeEventListener("keydown", fecharComEsc);
+  }, [menuAberto]);
+
   async function handleSair() {
     await sair();
     router.replace("/login");
@@ -64,7 +76,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="flex min-h-screen bg-bg-primary">
-      <aside className="fixed left-0 top-0 flex h-full w-64 flex-col justify-between gap-lg bg-bg-panel p-md">
+      {menuAberto && (
+        <div
+          aria-hidden
+          onClick={() => setMenuAberto(false)}
+          className="fixed inset-0 z-30 bg-bg-primary/70 backdrop-blur-sm lg:hidden"
+        />
+      )}
+
+      <aside
+        id="admin-sidebar"
+        className={`fixed inset-y-0 left-0 z-40 flex w-64 max-w-[85vw] flex-col justify-between gap-lg overflow-y-auto bg-bg-panel p-md transition-[transform,visibility] duration-200 lg:visible lg:translate-x-0 ${
+          menuAberto ? "visible translate-x-0 shadow-2xl" : "invisible -translate-x-full"
+        }`}
+      >
         <div className="flex flex-col gap-lg">
           <div className="flex items-center gap-sm pb-sm">
             <span className="flex h-8 w-8 items-center justify-center rounded-md bg-accent-default text-sm font-bold text-bg-primary">
@@ -78,6 +103,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 APS — PIVC — UNIP
               </span>
             </div>
+            <button
+              type="button"
+              onClick={() => setMenuAberto(false)}
+              aria-label="Fechar menu"
+              className="ml-auto flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-text-secondary hover:bg-bg-chip hover:text-text-primary lg:hidden"
+            >
+              <Icon name="close" className="text-[20px]" />
+            </button>
           </div>
 
           <div className="flex items-center gap-xs rounded-sm bg-bg-chip px-sm py-xs">
@@ -87,7 +120,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </span>
           </div>
 
-          <nav className="flex flex-col gap-xs">
+          {/* Clicar num link fecha a gaveta no celular/tablet. */}
+          <nav className="flex flex-col gap-xs" onClick={() => setMenuAberto(false)}>
             <NavItem
               href="/admin"
               label="Usuários"
@@ -157,12 +191,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
       </aside>
 
-      <div className="flex-1 pl-64">
-        <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-border-default bg-bg-primary/90 px-2xl backdrop-blur">
-          <div className="flex items-center gap-sm">
-            <div className="flex items-center gap-xs rounded-sm bg-bg-panel px-sm py-xs">
-              <Icon name="dns" className="text-[18px] text-accent-default" />
-              <span className="font-mono text-xs uppercase font-medium text-accent-default">
+      <div className="flex min-w-0 flex-1 flex-col lg:pl-64">
+        <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-sm border-b border-border-default bg-bg-primary/90 px-md backdrop-blur sm:px-lg lg:px-2xl">
+          <div className="flex min-w-0 items-center gap-sm">
+            <button
+              type="button"
+              onClick={() => setMenuAberto(true)}
+              aria-label="Abrir menu"
+              aria-controls="admin-sidebar"
+              aria-expanded={menuAberto}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-bg-panel text-text-primary hover:bg-bg-chip lg:hidden"
+            >
+              <Icon name="menu" className="text-[22px]" />
+            </button>
+            <div className="flex min-w-0 items-center gap-xs rounded-sm bg-bg-panel px-sm py-xs">
+              <Icon name="dns" className="shrink-0 text-[18px] text-accent-default" />
+              <span className="truncate font-mono text-xs uppercase font-medium text-accent-default">
                 Nó SRV-04 Ativo
               </span>
             </div>
@@ -171,14 +215,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <span className="font-mono text-xs text-text-muted">AES-256-GCM</span>
             </div>
           </div>
-          <div className="flex items-center gap-md">
+          <div className="flex shrink-0 items-center gap-md">
             <RelogioAoVivo />
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent-default">
               <Icon name="person" className="text-[18px] text-bg-primary" />
             </div>
           </div>
         </header>
-        <main className="p-2xl">{children}</main>
+        <main className="mx-auto w-full min-w-0 max-w-7xl p-md sm:p-lg lg:p-2xl">{children}</main>
       </div>
     </div>
   );

@@ -69,8 +69,8 @@ function TelaPareamento({ onPareado }: { onPareado: (p: Pareamento) => void }) {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-bg-primary p-lg">
-      <form onSubmit={handleSubmit} className="flex w-full max-w-md flex-col gap-lg rounded-lg bg-bg-panel p-xl">
+    <main className="flex min-h-screen items-center justify-center bg-bg-primary p-md sm:p-lg">
+      <form onSubmit={handleSubmit} className="flex w-full max-w-md flex-col gap-lg rounded-lg bg-bg-panel p-lg sm:p-xl">
         <div className="flex flex-col gap-xs">
           <span className="font-mono text-xs uppercase tracking-widest text-accent-default">
             SIAB Terminal Kiosk // Pareamento
@@ -270,22 +270,22 @@ export default function ScanPage() {
 
   return (
     <main className="min-h-screen bg-bg-primary text-text-primary">
-      <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-border-default bg-bg-panel/95 px-lg backdrop-blur md:px-2xl">
-        <div className="flex items-center gap-md">
-          <span className="flex h-8 w-8 items-center justify-center rounded-md bg-accent-default text-sm font-bold text-bg-primary">
+      <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-sm border-b border-border-default bg-bg-panel/95 px-lg backdrop-blur md:px-2xl">
+        <div className="flex min-w-0 items-center gap-md">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-accent-default text-sm font-bold text-bg-primary">
             S
           </span>
-          <div className="flex flex-col">
-            <span className="text-sm font-bold uppercase tracking-tight text-text-primary">
+          <div className="flex min-w-0 flex-col">
+            <span className="truncate text-sm font-bold uppercase tracking-tight text-text-primary">
               {porta?.terminal ?? "Terminal Cofre Central"}
             </span>
-            <span className="font-mono text-[10px] uppercase tracking-widest text-accent-default">
+            <span className="truncate font-mono text-[10px] uppercase tracking-widest text-accent-default">
               Terminal #{pareamento.terminalId}
               {" // SIAB Biometric Safe"}
             </span>
           </div>
         </div>
-        <div className="flex items-center gap-md">
+        <div className="flex shrink-0 items-center gap-md">
           <Link href="/admin" className="hidden text-sm text-text-secondary hover:text-text-primary sm:block">
             Painel Admin
           </Link>
@@ -375,8 +375,8 @@ export default function ScanPage() {
         )}
 
         {/* Porta protegida por este terminal (definida no cadastro do terminal) */}
-        <div className="flex w-full items-center justify-between gap-sm rounded-lg bg-bg-panel p-sm">
-          <div className="flex flex-col gap-xs">
+        <div className="flex w-full flex-wrap items-center justify-between gap-sm rounded-lg bg-bg-panel p-sm">
+          <div className="flex min-w-0 flex-col gap-xs">
             <span className="font-mono text-[10px] uppercase tracking-wide text-outline">
               Porta Protegida // Nível Exigido
             </span>
@@ -403,7 +403,7 @@ export default function ScanPage() {
             <span className="font-mono text-[10px] uppercase tracking-wide text-outline">Canal do Terminal</span>
             <span className="font-mono text-sm font-medium text-text-primary">HMAC-SHA256</span>
           </div>
-          <div className="flex flex-col gap-xs rounded-lg bg-bg-panel p-sm">
+          <div className="col-span-2 flex flex-col gap-xs rounded-lg bg-bg-panel p-sm md:col-span-1">
             <span className="font-mono text-[10px] uppercase tracking-wide text-outline">Detecção de Vivacidade</span>
             <span className="font-mono text-sm font-medium text-text-primary">Piscada + textura</span>
           </div>
@@ -411,7 +411,7 @@ export default function ScanPage() {
 
         {/* Viewport circular da câmera */}
         <div className="relative flex flex-col items-center">
-          <div className="relative flex h-72 w-72 items-center justify-center sm:h-80 sm:w-80">
+          <div className="relative flex h-64 w-64 items-center justify-center min-[360px]:h-72 min-[360px]:w-72 sm:h-80 sm:w-80">
             <div className="absolute inset-0 animate-[spin_40s_linear_infinite] rounded-full opacity-40">
               <svg className="h-full w-full text-accent-default" viewBox="0 0 400 400">
                 <circle cx="200" cy="200" r="195" fill="none" stroke="currentColor" strokeDasharray="3 7" strokeWidth="1.5" />
@@ -423,12 +423,12 @@ export default function ScanPage() {
                 estado === "resultado" ? (concedido ? "bg-status-success/10" : "bg-status-danger/10") : "bg-accent-default/5"
               }`}
             />
-            <div className="relative h-64 w-64 overflow-hidden rounded-full bg-bg-primary shadow-2xl sm:h-72 sm:w-72">
+            <div className="relative h-56 w-56 overflow-hidden rounded-full bg-bg-primary shadow-2xl min-[360px]:h-64 min-[360px]:w-64 sm:h-72 sm:w-72">
               <CameraCapture
                 ref={camRef}
                 showCaptureButton={false}
                 overlay={ocupado ? reticuloFacial : undefined}
-                containerClassName="relative h-64 w-64 sm:h-72 sm:w-72"
+                containerClassName="relative h-56 w-56 min-[360px]:h-64 min-[360px]:w-64 sm:h-72 sm:w-72"
                 videoClassName="h-full w-full object-cover"
                 onProntoChange={setCameraPronta}
               />

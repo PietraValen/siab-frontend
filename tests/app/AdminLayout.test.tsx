@@ -78,4 +78,28 @@ describe("AdminLayout (guard de autenticação)", () => {
     await screen.findByText("Conteúdo protegido");
     expect(window.localStorage.length).toBe(0);
   });
+
+  it("abre e fecha o menu lateral (gaveta) pelo botão do cabeçalho", async () => {
+    vi.mocked(api.sessao).mockResolvedValue({ username: "admin", mfaAtivo: true });
+
+    render(
+      <AdminLayout>
+        <p>Conteúdo protegido</p>
+      </AdminLayout>,
+    );
+
+    const abrir = await screen.findByRole("button", { name: "Abrir menu" });
+    expect(abrir).toHaveAttribute("aria-expanded", "false");
+
+    fireEvent.click(abrir);
+    expect(abrir).toHaveAttribute("aria-expanded", "true");
+
+    // Navegar por um link fecha a gaveta.
+    fireEvent.click(screen.getByRole("link", { name: /Logs de Acesso/ }));
+    expect(abrir).toHaveAttribute("aria-expanded", "false");
+
+    fireEvent.click(abrir);
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(abrir).toHaveAttribute("aria-expanded", "false");
+  });
 });

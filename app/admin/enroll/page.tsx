@@ -109,7 +109,7 @@ export default function AdminEnrollPage() {
   const ministroSemPin = nivelId === 3 && pin.length === 0;
 
   return (
-    <div className="flex flex-col gap-xl">
+    <div className="flex flex-col gap-lg sm:gap-xl">
       <div className="flex flex-col gap-xs rounded-lg bg-bg-panel/50 p-md">
         <span className="font-mono text-xs uppercase tracking-wider text-accent-default">
           Módulo de Admissão
@@ -137,11 +137,11 @@ export default function AdminEnrollPage() {
               </div>
               <span className="font-mono text-xs text-accent-default">CAM_ID: SIAB-01</span>
             </div>
-            <div className="p-lg">
+            <div className="p-md sm:p-lg">
               <CameraCapture
                 onCapture={setCapturedImage}
                 overlay={guiaOval}
-                containerClassName="relative mx-auto h-96 w-80 overflow-hidden rounded-lg bg-black"
+                containerClassName="relative mx-auto aspect-[5/6] w-full max-w-80 overflow-hidden rounded-lg bg-black"
                 videoClassName="h-full w-full object-cover block"
               />
             </div>
@@ -158,7 +158,7 @@ export default function AdminEnrollPage() {
 
         {/* Ficha de credenciamento */}
         <div className="lg:col-span-5">
-          <form onSubmit={handleSubmit} className="flex flex-col gap-lg rounded-lg bg-bg-panel p-lg">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-lg rounded-lg bg-bg-panel p-md sm:p-lg">
             <div className="flex items-center gap-xs">
               <Icon name="badge" className="text-[20px] text-accent-default" />
               <span className="text-base font-semibold text-text-primary">Ficha de Credenciamento</span>

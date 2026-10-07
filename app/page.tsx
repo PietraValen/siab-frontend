@@ -101,7 +101,7 @@ export default function HomePage() {
   return (
     <main className="flex min-h-screen flex-col bg-bg-primary">
       <header className="sticky top-0 z-20 border-b border-border-default bg-bg-panel/95 backdrop-blur">
-        <div className="flex h-20 items-center justify-between gap-lg px-lg md:px-2xl">
+        <div className="flex h-20 items-center justify-between gap-md px-md sm:px-lg md:px-2xl">
           <div className="flex min-w-0 items-center gap-md">
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-accent-default text-base font-bold text-bg-primary">
               S
@@ -126,7 +126,13 @@ export default function HomePage() {
               Novo Administrador
             </Link>
           </nav>
-          <div className="flex items-center gap-md">
+          <div className="flex shrink-0 items-center gap-md">
+            <Link
+              href="/login"
+              className="rounded-md bg-accent-default px-md py-xs text-sm font-semibold text-bg-primary transition-opacity hover:opacity-90 lg:hidden"
+            >
+              Entrar
+            </Link>
             <div className="hidden items-center gap-sm rounded-sm bg-bg-primary px-md py-xs xl:flex">
               <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-status-success" />
               <span className="font-mono text-xs text-text-primary">Sistema Operacional</span>

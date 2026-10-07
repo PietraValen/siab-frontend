@@ -3,6 +3,14 @@
 Interface web do Sistema de Identificação e Autenticação Biométrica.
 Consome a API do repositório `siab-backend`.
 
+**Cenário da APS:** no Ministério do Meio Ambiente há um cofre de segurança
+máxima com relatórios ultrassecretos sobre toxinas de altíssimo risco. O
+SIAB simula a última linha de defesa desse cofre: identifica e autentica o
+rosto de quem está diante do terminal de uma porta e decide se libera ou
+bloqueia a entrada conforme três
+níveis de permissão (Geral, Diretoria e Ministro; no nível Ministro, rosto
+e PIN).
+
 **Design:** [arquivo no Figma](https://www.figma.com/design/LZfsLXALKggxkc15lF0Jqj) — os componentes em `components/ui/` e os tokens em `app/globals.css` espelham 1:1 o que está lá.
 
 ## Stack

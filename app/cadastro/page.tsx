@@ -144,8 +144,8 @@ export default function CadastroPage() {
                 <span className="font-semibold text-status-danger underline underline-offset-2">
                   NÃO autoriza
                 </span>{" "}
-                abertura física do cofre, cuja liberação depende unicamente de biometria facial
-                presencial no terminal.
+                abertura física do cofre, cuja liberação depende da biometria facial presencial no
+                terminal (e do PIN, no nível Ministro).
               </p>
             </div>
           </div>
